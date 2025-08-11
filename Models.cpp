@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
-#include "StringHelper.cpp"
+#include "StringHelper.h"
 
 
 class ObjLoader{
@@ -16,7 +16,7 @@ class ObjLoader{
             std::istringstream iss(obj_string);
             // for every line in the string
             for (std::string line; std::getline(iss, line); ){
-                if(line._Starts_with("v ")){ // vertex position
+                if(line.rfind("v ", 0) == 0){ // vertex position
                     auto parts = StringHelper::split(line.substr(2), ' ');
                     if(parts.size() < 3) continue;
 
@@ -25,7 +25,7 @@ class ObjLoader{
                     float z = std::stof(parts[2]);
                     all_points.emplace_back(float3(x, y, z));
                 }
-                else if(line._Starts_with("f ")){ //face indices
+                else if(line.rfind("f ", 0) == 0){ //face indices
                     auto face_index_groups = StringHelper::split(line.substr(2), ' ');
                     
                     for(int i = 0; i < face_index_groups.size(); i++){

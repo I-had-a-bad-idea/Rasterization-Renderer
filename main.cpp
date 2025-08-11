@@ -7,9 +7,10 @@
 #include <stdexcept>
 #include <string>
 #include "Maths.h"
-#include "Models.cpp"
-#include "StringHelper.cpp"
-#include "RenderTargets.cpp"
+#include "Model.h"
+#include "Vector.h"
+#include "StringHelper.h"
+#include "RenderTarget.h"
 #include <filesystem>
 
 void write_image_to_file(const std::vector<float3>& image, int width, int height, const std::string& name) {
