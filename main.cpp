@@ -76,36 +76,66 @@ void write_image_to_file(const std::vector<float3>& image, int width, int height
     }
 }
 
-void create_test_image() {
-    const int width = 256;
-    const int height = 256;
-
-    try {
-        std::vector<float3> image(width * height);
-        float2 a(0.2f * width, 0.2f * height);
-        float2 b(0.7f * width, 0.4f * height);
-        float2 c(0.4f * width, 0.8f * height);
-
-
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
+void render(const std::vector<float2>& points, const std::vector<float3>& triangle_colors, std::vector<float3>& image, int width, int height, int point_count){
+    for(int y = 0; y < height; y++){
+        for(int x = 0; x < width; x++){
+            for(int i = 0; i < point_count; i += 3){
+                float2 a(points[i + 0]);
+                float2 b(points[i + 1]);
+                float2 c(points[i + 2]);
                 float2 p(x, y);
-                bool inside = Maths::point_in_triangle(a, b, c, p);
-                if(inside) image[y * width + x] = float3(0, 0, 1);
+
+                if(Math::point_in_triangle(a, b, c, p)){
+                    image[y * width + x] = triangle_colors[i / 3];
+                }
             }
         }
-
-        write_image_to_file(image, width, height, "test_image");
-        std::cout << "Image created successfully!" << std::endl;
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
     }
 }
 
+void create_test_images() {
+    const int width = 256;
+    const int height = 256;
+    const int triangle_count = 256;
+    
+    float2 points[triangle_count * 3];
+    float2 velocities[triangle_count * 3];
+    float3 triangle_colors[triangle_count];
+
+    float2 half_size(width / 2.0f, height / 2.0f);
+    
+    for (int i = 0; i < triangle_count * 3; i++){
+        float2 p(Math::random_float2(width, height));
+        points[i] = p;
+        points[i].x = (points[i].x - half_size.x) * 0.3f + half_size.x;
+        points[i].y = (points[i].y - half_size.y) * 0.3f + half_size.y;
+    }
+
+    for (int i = 0; i < triangle_count * 3; i += 3){
+
+        float2 velocity(Math::random_float2(width, height));
+        velocity.x = (velocity.x - half_size.x) * 0.5f;
+        velocity.y = (velocity.y - half_size.y) * 0.5f;
+        velocities[i + 0] = velocity;
+        velocities[i + 1] = velocity;
+        velocities[i + 2] = velocity;
+        triangle_colors[i / 3] = Math::random_color();
+    }
+    
+    std::vector<float2> points_vec(points, points + triangle_count * 3);
+    std::vector<float3> triangle_colors_vec(triangle_colors, triangle_colors + triangle_count);
+    std::vector<float3> image(width * height, float3(0, 0, 0));
+
+    render(points_vec, triangle_colors_vec, image, width, height, triangle_count * 3);
+    write_image_to_file(image, width, height, "output");
+
+}
+
+
+
 int main() {
     try {
-        create_test_image();
+        create_test_images();
         return 0;
     }
     catch (const std::exception& e) {
@@ -113,3 +143,5 @@ int main() {
         return 1;
     }
 }
+
+//za84rr1sje@vwhins.com

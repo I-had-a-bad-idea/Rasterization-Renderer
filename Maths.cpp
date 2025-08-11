@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cmath>
 
 // A 3D vector, which can also be used for rgb-values
 class float3 {
@@ -14,16 +15,6 @@ class float3 {
         void set_r(float value) { x = std::clamp(value, 0.0f, 1.0f); }
         void set_g(float value) { y = std::clamp(value, 0.0f, 1.0f); }
         void set_b(float value) { z = std::clamp(value, 0.0f, 1.0f); }
-
-        float3& operator+=(const float3& rhs) {
-            x += rhs.x; y += rhs.y; z += rhs.z;
-            return *this;
-        }
-
-        float3& operator*=(float scalar) {
-            x *= scalar; y *= scalar; z *= scalar;
-            return *this;
-        }
 };
 
 // A 2D vector
@@ -33,10 +24,26 @@ class float2 {
 
         float2(float x = 0.0f, float y = 0.0f) : x(x), y(y){}
 
+        float length(){
+            return std::sqrt(x * x + y * y);
+        }
+
 };
 
-class Maths{
+class Math{
     public:
+
+        static float random_float(float min, float max){
+            return min + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(max - min)));
+        }
+
+        static float2 random_float2(float width, float height){
+            return float2(random_float(0, width), random_float(0,height));
+        }
+
+        static float3 random_color(){
+            return float3(random_float(0.0, 1.0), random_float(0.0, 1.0), random_float(0.0, 1.0));
+        }
 
         // Calculate the dot product of a and b
         static float dot(float2 a, float2 b){
