@@ -6,7 +6,7 @@ class float3 {
     public:
         float x, y, z;
 
-        float3(float x = 0.0f, float y = 0.0f, float z = 0.0f) : x(x), y(y), z(z) {}
+        float3::float3(float x = 0.0f, float y = 0.0f, float z = 0.0f) : x(x), y(y), z(z) {}
 
         float r() const { return x; }
         float g() const { return y; }
@@ -72,5 +72,17 @@ class Math{
             bool side_ca = point_on_right_side_of_line(c, a, p);
 
             return (side_ab == side_bc) && (side_bc == side_ca);
+        }
+
+        // Converts world-space coordinates into screen-space cooridinate
+        static float2 world_to_screen(float3 vertex, float2 target_size){
+            
+            float screen_height_world = 5;
+            float pixels_per_world_unit = target_size.y / screen_height_world;
+
+            float2 pixel_offset(vertex.x * pixels_per_world_unit, vertex.y * pixels_per_world_unit);
+            target_size.x = target_size.x / 2 * pixel_offset.x;
+            target_size.y = target_size.y / 2 * pixel_offset.y;
+            return target_size;
         }
 };

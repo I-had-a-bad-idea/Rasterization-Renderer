@@ -6,8 +6,11 @@
 #include <algorithm>
 #include <stdexcept>
 #include <string>
-#include "Maths.cpp"
-
+#include "Maths.h"
+#include "Models.cpp"
+#include "StringHelper.cpp"
+#include "RenderTargets.cpp"
+#include <filesystem>
 
 void write_image_to_file(const std::vector<float3>& image, int width, int height, const std::string& name) {
     if (width <= 0 || height <= 0) {
@@ -77,11 +80,11 @@ void write_image_to_file(const std::vector<float3>& image, int width, int height
     }
 }
 
-void render(const std::vector<float2>& points, const std::vector<float3>& triangle_colors, std::vector<float3>& image, int width, int height, int point_count){
-    for(int i = 0; i < point_count; i += 3){
-        float2 a(points[i + 0]);
-        float2 b(points[i + 1]);
-        float2 c(points[i + 2]);
+void render(Model model, RenderTarget target){
+    for(int i = 0; i < model.Points.size(); i += 3){
+        float2 a(Math::world_to_screen(model.Points[i + 0], target.Size));
+        float2 b(Math::world_to_screen(model.Points[i + 1], target.Size));
+        float2 c(Math::world_to_screen(model.Points[i + 2], target.Size));
 
         // Triangle bounds
         float min_x = std::min(std::min(a.x, b.x), c.x);
@@ -90,24 +93,22 @@ void render(const std::vector<float2>& points, const std::vector<float3>& triang
         float max_y = std::max(std::max(a.y, b.y), c.y);
 
         // Pixel block covering the triangle bounds
-        int block_start_x = std::clamp((int)min_x, 0, width - 1);
-        int block_start_y = std::clamp((int)min_y, 0, height -1);
-        int block_end_x = std::clamp((int)ceil(max_x), 0, width -1);
-        int block_end_y = std::clamp((int)ceil(max_y), 0, height - 1);
+        int block_start_x = std::clamp((int)min_x, 0, target.Width - 1);
+        int block_start_y = std::clamp((int)min_y, 0, target.Height -1);
+        int block_end_x = std::clamp((int)ceil(max_x), 0, target.Width -1);
+        int block_end_y = std::clamp((int)ceil(max_y), 0, target.Height - 1);
 
         // Loop over the block
         for(int y = block_start_y; y <= block_end_y; y++){
             for(int x = block_start_x; x <= block_end_x; x++){
                 if(!Math::point_in_triangle(a, b, c, float2(x, y))) continue;
-                image[y * width + x] = triangle_colors[i / 3];
+                target.color_buffer[y * target.Width + x] = model.Triangle_colors[i / 3];
             }
         }
     }
 }
 
-void create_test_images() {
-    const int width = 256;
-    const int height = 256;
+void create_test_images(int width, int height) {
     const int triangle_count = 256;
     
     float2 points[triangle_count * 3];
@@ -141,7 +142,8 @@ void create_test_images() {
         std::vector<float3> image(width * height, float3(0, 0, 0)); // clear to black
 
         // Render
-        render(points_vec, triangle_colors_vec, image, width, height, triangle_count * 3);
+        //TODO either remove this or rememnber to delete the comment
+        //render(points_vec, triangle_colors_vec, image, width, height, triangle_count * 3);
 
         // Save image
         std::string filename = "frame_" + std::to_string(frame);
@@ -167,14 +169,26 @@ void create_test_images() {
 
 
 int main() {
-    try {
-        create_test_images();
-        return 0;
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Fatal error: " << e.what() << std::endl;
-        return 1;
-    }
-}
+    int width = 256;
+    int height = 256;
 
+    // Load cube data
+    std::string obj_path = std::filesystem::current_path().string() + "/Objects/Cube.obj";
+    std::string obj_string = StringHelper::readFileToString(obj_path);
+    std::vector<float3> cube_model_points = ObjLoader::load_obj_file(obj_string);
+
+    std::vector<float3> triangle_colors;
+    for(int i = 0; i < cube_model_points.size() / 3; i++){
+        triangle_colors[i] = Math::random_color();
+    }
+
+
+    Model cube_model(cube_model_points, triangle_colors);
+    RenderTarget render_target(width, height);
+
+    render(cube_model, render_target);
+    write_image_to_file(render_target.color_buffer, render_target.Width, render_target.Height, "Test");
+
+    return 0;
+}
 //za84rr1sje@vwhins.com
