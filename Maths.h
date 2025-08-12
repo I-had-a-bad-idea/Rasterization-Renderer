@@ -2,6 +2,7 @@
 #define MATH_H
 
 #include "Vector.h"
+#include "Transform.h"
 
 class Math {
 public:
@@ -12,7 +13,7 @@ public:
     static float2 perpendicular(float2 vec);
     static bool point_on_right_side_of_line(float2 a, float2 b, float2 p);
     static bool point_in_triangle(float2 a, float2 b, float2 c, float2 p);
-    static float2 world_to_screen(float3 vertex, float2 target_size);
+    static float2 world_to_screen(float3 vertex, Transform transform, float2 target_size);
 };
 
 #endif

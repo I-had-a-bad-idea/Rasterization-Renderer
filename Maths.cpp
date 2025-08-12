@@ -2,6 +2,7 @@
 #include <cmath>
 #include "Maths.h"
 #include "Vector.h"
+#include "Transform.h"
 
 float Math::random_float(float min, float max){
     return min + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(max - min)));
@@ -56,13 +57,15 @@ bool Math::point_in_triangle(float2 a, float2 b, float2 c, float2 p){
 }
 
 // Converts world-space coordinates into screen-space coordinate
-float2 Math::world_to_screen(float3 vertex, float2 numPixels) {
+float2 Math::world_to_screen(float3 vertex, Transform transform, float2 numPixels) {
     // Scale world coordinates to fit nicely in the screen
+    float3 vertex_world;
+    vertex_world = transform.ToWorldPoint(vertex);
     float scale = 50.0f; // Adjust this to make the cube larger/smaller
     
     // Simple orthographic projection (ignore Z for now)
-    float screenX = numPixels.x / 2.0f + vertex.x * scale;
-    float screenY = numPixels.y / 2.0f - vertex.y * scale; // Flip Y for screen coordinates
+    float screenX = numPixels.x / 2.0f + vertex_world.x * scale;
+    float screenY = numPixels.y / 2.0f - vertex_world.y * scale; // Flip Y for screen coordinates
 
     return float2(screenX, screenY);
 }

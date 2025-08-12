@@ -47,5 +47,4 @@ std::vector<float3> ObjLoader::load_obj_file(std::string objString) {
 Model::Model(std::vector<float3> points, std::vector<float3> colors){
     Points = points;
     Triangle_colors = colors;
-
 }

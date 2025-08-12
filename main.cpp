@@ -88,9 +88,9 @@ void render(Model model, RenderTarget& target) {
     std::fill(target.color_buffer.begin(), target.color_buffer.end(), float3(0.0f, 0.0f, 0.0f)); // Blackbackground
     
     for(int i = 0; i < model.Points.size(); i += 3) {
-        float2 a = Math::world_to_screen(model.Points[i + 0], target.Size);
-        float2 b = Math::world_to_screen(model.Points[i + 1], target.Size);
-        float2 c = Math::world_to_screen(model.Points[i + 2], target.Size);
+        float2 a = Math::world_to_screen(model.Points[i + 0], model.Model_transform, target.Size);
+        float2 b = Math::world_to_screen(model.Points[i + 1], model.Model_transform, target.Size);
+        float2 c = Math::world_to_screen(model.Points[i + 2], model.Model_transform, target.Size);
 
         std::cout << "Triangle " << (i/3) << ": ";
         std::cout << "(" << model.Points[i + 0].x << ", " << model.Points[i + 0].y << ", " << model.Points[i + 0].z << ") -> (" << a.x << ", " << a.y << ") \t";
@@ -151,7 +151,7 @@ int main() {
     std::cout << "Number of triangles: " << cube_model_points.size() / 3 << std::endl;
 
     render(cube_model, render_target);
-    write_image_to_file(render_target.color_buffer, render_target.Width, render_target.Height, "Test");
+    write_image_to_file(render_target.color_buffer, render_target.Width, render_target.Height, "Cube-rotated");
 
     std::cout << "Rendering complete! Check Test.bmp" << std::endl;
     return 0;

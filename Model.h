@@ -4,6 +4,7 @@
 #include "Vector.h"
 #include <vector>
 #include <string>
+#include "Transform.h"
 
 class ObjLoader {
 public:
@@ -14,6 +15,7 @@ class Model {
 public:
     std::vector<float3> Points;
     std::vector<float3> Triangle_colors;
+    Transform Model_transform;
 
     Model(std::vector<float3> points, std::vector<float3> colors);
 };
