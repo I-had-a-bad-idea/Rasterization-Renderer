@@ -2,7 +2,7 @@
 #include <cmath>
 
 
-ObjectTransform::ObjectTransform() : Position(float3(0, 0, 0)), Yaw(30.0f), Pitch(40.0f) {} 
+ObjectTransform::ObjectTransform() : Position(float3(0, 0, 0)), Yaw(0.0f), Pitch(0.0f) {} 
 ObjectTransform::ObjectTransform(float3 position, float yaw, float pitch) : Position(position), Yaw(yaw), Pitch(pitch) {}
 
 float3 ObjectTransform::ToWorldPoint(float3 p)

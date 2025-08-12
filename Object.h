@@ -17,7 +17,7 @@ public:
     std::vector<float3> Triangle_colors;
     ObjectTransform Obj_Transform;
 
-    Object(std::vector<float3> points, std::vector<float3> colors, float3 position);
+    Object(std::vector<float3> points, std::vector<float3> colors, float3 position, float3 rotation);
 };
 
 #endif

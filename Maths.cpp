@@ -48,7 +48,8 @@ bool Math::point_in_triangle(float2 a, float2 b, float2 c, float2 p, float3& wei
     bool in_tri = areaABP >= 0 && areaBCP >= 0 && areaCAP >= 0;
 
     // Weigthing factors (barycentric coordinates)
-    float inv_area_sum = 1 / (areaABP + areaBCP + areaCAP);
+    float total_area = areaABP + areaBCP + areaCAP;
+    float inv_area_sum = 1 / total_area;
     float weigthA = areaBCP * inv_area_sum;
     float weightB = areaCAP * inv_area_sum;
     float weightC = areaABP * inv_area_sum;
@@ -56,7 +57,7 @@ bool Math::point_in_triangle(float2 a, float2 b, float2 c, float2 p, float3& wei
     weigths = float3(weigthA, weightB, weightC);
 
 
-    return in_tri;
+    return in_tri && total_area > 0;
 
 
 }
@@ -73,7 +74,7 @@ float3 Math::world_to_screen(float3 vertex, ObjectTransform transform, float2 nu
                         vertex_world.y * pixels_per_world_unit);
     
     float2 vertex_screen(numPixels.x / 2 + pixel_offset.x,
-                numPixels.y / 2 + pixel_offset.y);
+                numPixels.y / 2 + pixel_offset.y); 
 
     return float3(vertex_screen.x, vertex_screen.y, vertex_world.z);
 }

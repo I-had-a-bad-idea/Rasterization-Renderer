@@ -1,143 +1,15 @@
 #include <iostream>
-#include <fstream>
-#include <vector>
-#include <cstdint>
-#include <cmath>
-#include <algorithm>
-#include <stdexcept>
 #include <string>
 #include <filesystem>
-#include <cstdlib>
-#include <ctime>
-#include "Vector.h"
-#include "RenderTarget.h"
 #include "Object.h"
-#include "Maths.h"
+#include "Vector.h"
 #include "StringHelper.h"
-#include <raylib.h>
+#include "Maths.h"
+#include "RenderTarget.h"
+#include "Rasterizer.h"
+#include "raylib.h"
 
-void write_image_to_file(std::vector<float3>& image, int width, int height, const std::string& name) {
-    if (width <= 0 || height <= 0) {
-        throw std::invalid_argument("Invalid image dimensions");
-    }
-
-    if (image.size() != static_cast<size_t>(width * height)) {
-        throw std::invalid_argument("Image buffer size doesn't match dimensions");
-    }
-    std::ofstream writer(name + ".bmp", std::ios::binary);
-    if (!writer) {
-        throw std::runtime_error("Failed to create output file");
-    }
-
-    uint32_t fileSize = 14 + 40 + (width * height * 4);
-    uint32_t dataOffset = 14 + 40;
-    uint32_t dibHeaderSize = 40;
-    uint16_t planes = 1;
-    uint16_t bitsPerPixel = 8 * 4;
-    uint32_t compression = 0;
-    uint32_t dataSize = width * height * 4;
-
-    // --- BMP Header ---
-    writer.write("BM", 2);
-    writer.write(reinterpret_cast<char*>(&fileSize), 4);
-    uint32_t reserved = 0;
-    writer.write(reinterpret_cast<char*>(&reserved), 4);
-    writer.write(reinterpret_cast<char*>(&dataOffset), 4);
-
-    // --- DIB Header ---
-    writer.write(reinterpret_cast<char*>(&dibHeaderSize), 4);
-    writer.write(reinterpret_cast<char*>(&width), 4);
-    writer.write(reinterpret_cast<char*>(&height), 4);
-    writer.write(reinterpret_cast<char*>(&planes), 2);
-    writer.write(reinterpret_cast<char*>(&bitsPerPixel), 2);
-    writer.write(reinterpret_cast<char*>(&compression), 4);
-    writer.write(reinterpret_cast<char*>(&dataSize), 4);
-    uint32_t printRes = 2835; // 72 DPI
-    writer.write(reinterpret_cast<char*>(&printRes), 4);
-    writer.write(reinterpret_cast<char*>(&printRes), 4);
-    uint32_t paletteColors = 0;
-    writer.write(reinterpret_cast<char*>(&paletteColors), 4);
-    uint32_t importantColors = 0;
-    writer.write(reinterpret_cast<char*>(&importantColors), 4);
-
-    // --- Pixel Data (BMP stores bottom-to-top) ---
-    for (int y = height - 1; y >= 0; y--) {
-        for (int x = 0; x < width; x++) {
-            float3 col = image[y * width + x];
-            uint8_t r = static_cast<uint8_t>(std::clamp(col.r() * 255.0f, 0.0f, 255.0f));
-            uint8_t g = static_cast<uint8_t>(std::clamp(col.g() * 255.0f, 0.0f, 255.0f));
-            uint8_t b = static_cast<uint8_t>(std::clamp(col.b() * 255.0f, 0.0f, 255.0f));
-            uint8_t padding = 0;
-            
-            if (!writer.write(reinterpret_cast<char*>(&b), 1) ||
-                !writer.write(reinterpret_cast<char*>(&g), 1) ||
-                !writer.write(reinterpret_cast<char*>(&r), 1) ||
-                !writer.write(reinterpret_cast<char*>(&padding), 1)) {
-                throw std::runtime_error("Failed to write pixel data");
-            }    
-        }
-    }
-
-    writer.close();
-    if (writer.fail()) {
-        throw std::runtime_error("Failed to properly close the file");
-    }
-}
-
-void render(Object model, RenderTarget& target, float fov) {
-    // Clear the color buffer first
-    std::fill(target.color_buffer.begin(), target.color_buffer.end(), float3(0.0f, 0.0f, 0.0f)); // Blackbackground
-    
-    for(int i = 0; i < model.Points.size(); i += 3) {
-        float3 a = Math::world_to_screen(model.Points[i + 0], model.Obj_Transform, target.Size, fov);
-        float3 b = Math::world_to_screen(model.Points[i + 1], model.Obj_Transform, target.Size, fov);
-        float3 c = Math::world_to_screen(model.Points[i + 2], model.Obj_Transform, target.Size, fov);
-
-        std::cout << "Triangle " << (i/3) << ": ";
-        std::cout << "(" << model.Points[i + 0].x << ", " << model.Points[i + 0].y << ", " << model.Points[i + 0].z << ") -> (" << a.x << ", " << a.y << ") \t";
-        std::cout << "(" << model.Points[i + 1].x << ", " << model.Points[i + 1].y << ", " << model.Points[i + 1].z << ") -> (" << b.x << ", " << b.y << ") \t";
-        std::cout << "(" << model.Points[i + 2].x << ", " << model.Points[i + 2].y << ", " << model.Points[i + 2].z << ") -> (" << c.x << ", " << c.y << ")" << std::endl;
-
-        // Triangle bounds
-        float min_x = std::min({a.x, b.x, c.x});
-        float min_y = std::min({a.y, b.y, c.y});
-        float max_x = std::max({a.x, b.x, c.x});
-        float max_y = std::max({a.y, b.y, c.y});
-
-        // Pixel block covering the triangle bounds
-        int block_start_x = std::max(0, (int)std::floor(min_x));
-        int block_start_y = std::max(0, (int)std::floor(min_y));
-        int block_end_x = std::min(target.Width - 1, (int)std::ceil(max_x));
-        int block_end_y = std::min(target.Height - 1, (int)std::ceil(max_y));
-
-        // Ensure we have a valid triangle color index
-        int color_index = (i / 3) % model.Triangle_colors.size();
-
-        // Loop over the block
-        for(int y = block_start_y; y <= block_end_y; y++) {
-            for(int x = block_start_x; x <= block_end_x; x++) {
-                float2 p(x + 0.5f, y + 0.5f);
-                float3 weights;
-
-                if(Math::point_in_triangle(float2(a.x, a.y), float2(b.x, b.y), float2(c.x, c.y), p, weights)){
-
-                    float3 depths(a.z, b.z, c.z);
-                    float depth = Math::dot(depths, weights);
-                    if(depth > target.depth_buffer[y * target.Width + x]) continue;
-
-                    
-                    // Update pixel if nothing has been drawn nearer
-                    target.color_buffer[y * target.Width + x] = model.Triangle_colors[i / 3];
-                    target.depth_buffer[y * target.Width + x] = depth;
-
-                }
-
-            }
-        }
-    }
-}
-
-Object load_object(std::string path, float3 position, float yaw, float pitch){
+Object load_object(std::string path, float3 position, float3 rotatation){
     // Load model data
     std::string obj_path = std::filesystem::current_path().string() + path;
     std::string obj_string = StringHelper::readFileToString(obj_path);
@@ -153,19 +25,66 @@ Object load_object(std::string path, float3 position, float yaw, float pitch){
     for(int i = 0; i < object_points.size() / 3; i++){
         triangle_colors[i] = Math::random_color();
     }
-    return Object(object_points, triangle_colors, position);
+    return Object(object_points, triangle_colors, position, rotatation);
 }
+
+void ToFlatByteArray(RenderTarget &renderTarget, std::vector<Color> &data) {
+    data.resize(renderTarget.color_buffer.size());
+
+    for (size_t i = 0; i < renderTarget.color_buffer.size(); i++) {
+        float3 &col = renderTarget.color_buffer[i];
+        unsigned char r = static_cast<unsigned char>(std::clamp(col.r() * 255.0f, 0.0f, 255.0f));
+        unsigned char g = static_cast<unsigned char>(std::clamp(col.g(), 0.0f, 1.0f) * 255.0f);
+        unsigned char b = static_cast<unsigned char>(std::clamp(col.b(), 0.0f, 1.0f) * 255.0f);
+        data[i] = { r, g, b, 255 }; // Raylib's Color is {unsigned char r,g,b,a;}
+    }
+}
+
+//TODO make this use a "scene", which also has an update cycle, using this line:   scene.Update(target, GetFrameTime());
+void Run(RenderTarget target, std::vector<Object> objects, float fov){
+    // Create window
+    InitWindow(target.Width, target.Height, "Rasterization-Renderer");
+    Texture2D texture(LoadTextureFromImage(GenImageColor(target.Width, target.Height, BLACK)));
+
+    std::vector<Color> textureBytes(target.Width * target.Height * 4); // RGBA
+
+    // Render loop
+
+    while(!WindowShouldClose()){
+
+        Rasterizer::Render(objects, target, fov);
+
+        // Write rasterizer output to texture and display on window
+        ToFlatByteArray(target, textureBytes);
+        UpdateTexture(texture, textureBytes.data());
+
+        BeginDrawing();
+        DrawTexture(texture, 0, 0, WHITE);
+        EndDrawing();
+    }
+
+    CloseWindow();
+
+}
+
 
 int main() {
     int width = 256 * 4;  // Increased resolution for better visibility
     int height = 256 * 4;
     float fov = 90;
 
-    Object monkey(load_object("/Objects/Monkey.obj", float3(0, 0, 2), 30, 50));
+    Object monkey(load_object("/Objects/Monkey.obj", float3(0, 0, 2), float3(90 + 45, 0, 0)));
+    Object cube0(load_object("/Objects/Cube.obj", float3(3, 2, 4), float3(0, 0, 0)));
+    Object cube1(load_object("/Objects/Cube.obj", float3(-3, 2, 4), float3(0, 0, 0)));
+
 
     RenderTarget render_target(width, height);
-    render(monkey, render_target, fov);
-    write_image_to_file(render_target.color_buffer, render_target.Width, render_target.Height, "Color");
+
+    std::vector<Object> objects = {monkey, cube0, cube1};
+
+    Run(render_target, objects, 60);    
+//  Rasterizer::Render(objects, render_target, fov);
+//  Rasterizer::write_image_to_file(render_target.color_buffer, render_target.Width, render_target.Height, "Color");
     
     std::cout << "Rendering complete! Check Test.bmp" << std::endl;
     return 0;

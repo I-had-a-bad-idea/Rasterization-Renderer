@@ -1,0 +1,27 @@
+#ifndef RASTERIZER_H
+#define RASTERIZER_H
+
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <cstdint>
+#include <cmath>
+#include <algorithm>
+#include <stdexcept>
+#include <string>
+#include "Vector.h"
+#include "RenderTarget.h"
+#include "Object.h"
+#include "Maths.h"
+
+class Rasterizer{
+    public:
+        static void write_image_to_file(std::vector<float3>& image, int width, int height, const std::string& name);
+        static void Render(const std::vector<Object>& models, RenderTarget& target, float fov);
+
+};
+
+
+
+
+#endif
