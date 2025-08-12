@@ -6,14 +6,14 @@
 #include <algorithm>
 #include <stdexcept>
 #include <string>
-#include "Maths.h"
-#include "Model.h"
-#include "Vector.h"
-#include "StringHelper.h"
-#include "RenderTarget.h"
 #include <filesystem>
+#include "Vector.h"
+#include "RenderTarget.h"
+#include "Model.h"
+#include "Maths.h"
+#include "StringHelper.h"
 
-void write_image_to_file(const std::vector<float3>& image, int width, int height, const std::string& name) {
+void write_image_to_file(std::vector<float3>& image, int width, int height, const std::string& name) {
     if (width <= 0 || height <= 0) {
         throw std::invalid_argument("Invalid image dimensions");
     }
@@ -60,7 +60,7 @@ void write_image_to_file(const std::vector<float3>& image, int width, int height
     // --- Pixel Data ---
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            const float3& col = image[y * width + x];
+            float3 col = image[y * width + x];
             uint8_t r = static_cast<uint8_t>(std::clamp(col.r() * 255.0f, 0.0f, 255.0f));
             uint8_t g = static_cast<uint8_t>(std::clamp(col.g() * 255.0f, 0.0f, 255.0f));
             uint8_t b = static_cast<uint8_t>(std::clamp(col.b() * 255.0f, 0.0f, 255.0f));
@@ -178,7 +178,7 @@ int main() {
     std::string obj_string = StringHelper::readFileToString(obj_path);
     std::vector<float3> cube_model_points = ObjLoader::load_obj_file(obj_string);
 
-    std::vector<float3> triangle_colors;
+    std::vector<float3> triangle_colors(cube_model_points.size() / 3);
     for(int i = 0; i < cube_model_points.size() / 3; i++){
         triangle_colors[i] = Math::random_color();
     }

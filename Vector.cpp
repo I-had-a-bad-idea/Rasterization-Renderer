@@ -8,9 +8,9 @@ float float2::length() {
 
 float3::float3(float x, float y, float z) : x(x), y(y), z(z) {}
 
-float float3::r() const { return x; }
-float float3::g() const { return y; }
-float float3::b() const { return z; }
+float float3::r() { return x; }
+float float3::g() { return y; }
+float float3::b() { return z; }
 
 void float3::set_r(float value) { x = std::clamp(value, 0.0f, 1.0f); }
 void float3::set_g(float value) { y = std::clamp(value, 0.0f, 1.0f); }
