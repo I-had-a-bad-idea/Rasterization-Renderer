@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <string>
 #include <filesystem>
+#include <cstdlib>
+#include <ctime>
 #include "Vector.h"
 #include "RenderTarget.h"
 #include "Model.h"
@@ -57,8 +59,8 @@ void write_image_to_file(std::vector<float3>& image, int width, int height, cons
     uint32_t importantColors = 0;
     writer.write(reinterpret_cast<char*>(&importantColors), 4);
 
-    // --- Pixel Data ---
-    for (int y = 0; y < height; y++) {
+    // --- Pixel Data (BMP stores bottom-to-top) ---
+    for (int y = height - 1; y >= 0; y--) {
         for (int x = 0; x < width; x++) {
             float3 col = image[y * width + x];
             uint8_t r = static_cast<uint8_t>(std::clamp(col.r() * 255.0f, 0.0f, 255.0f));
@@ -81,96 +83,50 @@ void write_image_to_file(std::vector<float3>& image, int width, int height, cons
     }
 }
 
-void render(Model model, RenderTarget target){
-    for(int i = 0; i < model.Points.size(); i += 3){
-        float2 a(Math::world_to_screen(model.Points[i + 0], target.Size));
-        float2 b(Math::world_to_screen(model.Points[i + 1], target.Size));
-        float2 c(Math::world_to_screen(model.Points[i + 2], target.Size));
+void render(Model model, RenderTarget& target) {
+    // Clear the color buffer first
+    std::fill(target.color_buffer.begin(), target.color_buffer.end(), float3(0.0f, 0.0f, 0.0f)); // Blackbackground
+    
+    for(int i = 0; i < model.Points.size(); i += 3) {
+        float2 a = Math::world_to_screen(model.Points[i + 0], target.Size);
+        float2 b = Math::world_to_screen(model.Points[i + 1], target.Size);
+        float2 c = Math::world_to_screen(model.Points[i + 2], target.Size);
+
+        std::cout << "Triangle " << (i/3) << ": ";
+        std::cout << "(" << model.Points[i + 0].x << ", " << model.Points[i + 0].y << ", " << model.Points[i + 0].z << ") -> (" << a.x << ", " << a.y << ") \t";
+        std::cout << "(" << model.Points[i + 1].x << ", " << model.Points[i + 1].y << ", " << model.Points[i + 1].z << ") -> (" << b.x << ", " << b.y << ") \t";
+        std::cout << "(" << model.Points[i + 2].x << ", " << model.Points[i + 2].y << ", " << model.Points[i + 2].z << ") -> (" << c.x << ", " << c.y << ")" << std::endl;
 
         // Triangle bounds
-        float min_x = std::min(std::min(a.x, b.x), c.x);
-        float min_y = std::min(std::min(a.y, b.y), c.y);
-        float max_x = std::max(std::max(a.x, b.x), c.x);
-        float max_y = std::max(std::max(a.y, b.y), c.y);
+        float min_x = std::min({a.x, b.x, c.x});
+        float min_y = std::min({a.y, b.y, c.y});
+        float max_x = std::max({a.x, b.x, c.x});
+        float max_y = std::max({a.y, b.y, c.y});
 
         // Pixel block covering the triangle bounds
-        int block_start_x = std::clamp((int)min_x, 0, target.Width - 1);
-        int block_start_y = std::clamp((int)min_y, 0, target.Height -1);
-        int block_end_x = std::clamp((int)ceil(max_x), 0, target.Width -1);
-        int block_end_y = std::clamp((int)ceil(max_y), 0, target.Height - 1);
+        int block_start_x = std::max(0, (int)std::floor(min_x));
+        int block_start_y = std::max(0, (int)std::floor(min_y));
+        int block_end_x = std::min(target.Width - 1, (int)std::ceil(max_x));
+        int block_end_y = std::min(target.Height - 1, (int)std::ceil(max_y));
+
+        // Ensure we have a valid triangle color index
+        int color_index = (i / 3) % model.Triangle_colors.size();
 
         // Loop over the block
-        for(int y = block_start_y; y <= block_end_y; y++){
-            for(int x = block_start_x; x <= block_end_x; x++){
-                if(!Math::point_in_triangle(a, b, c, float2(x, y))) continue;
-                target.color_buffer[y * target.Width + x] = model.Triangle_colors[i / 3];
+        for(int y = block_start_y; y <= block_end_y; y++) {
+            for(int x = block_start_x; x <= block_end_x; x++) {
+                // Add 0.5 offset for pixel center sampling
+                if(Math::point_in_triangle(a, b, c, float2(x + 0.5f, y + 0.5f))) {
+                    target.color_buffer[y * target.Width + x] = model.Triangle_colors[color_index];
+                }
             }
         }
     }
 }
-
-void create_test_images(int width, int height) {
-    const int triangle_count = 256;
-    
-    float2 points[triangle_count * 3];
-    float2 velocities[triangle_count * 3];
-    float3 triangle_colors[triangle_count];
-
-    float2 half_size(width / 2.0f, height / 2.0f);
-    
-    for (int i = 0; i < triangle_count * 3; i++){
-        float2 p(Math::random_float2(width, height));
-        points[i] = p;
-        points[i].x = (points[i].x - half_size.x) * 0.3f + half_size.x;
-        points[i].y = (points[i].y - half_size.y) * 0.3f + half_size.y;
-    }
-
-    for (int i = 0; i < triangle_count * 3; i += 3){
-
-        float2 velocity(Math::random_float2(width, height));
-        velocity.x = (velocity.x - half_size.x) * 0.5f;
-        velocity.y = (velocity.y - half_size.y) * 0.5f;
-        velocities[i + 0] = velocity;
-        velocities[i + 1] = velocity;
-        velocities[i + 2] = velocity;
-        triangle_colors[i / 3] = Math::random_color();
-    }
-    
-    for (int frame = 0; frame < 60; frame++) {
-        // Convert arrays to vectors for render
-        std::vector<float2> points_vec(points, points + triangle_count * 3);
-        std::vector<float3> triangle_colors_vec(triangle_colors, triangle_colors + triangle_count);
-        std::vector<float3> image(width * height, float3(0, 0, 0)); // clear to black
-
-        // Render
-        //TODO either remove this or rememnber to delete the comment
-        //render(points_vec, triangle_colors_vec, image, width, height, triangle_count * 3);
-
-        // Save image
-        std::string filename = "frame_" + std::to_string(frame);
-        write_image_to_file(image, width, height, filename);
-
-        // Update points positions
-        for (int i = 0; i < triangle_count * 3; i++) {
-            points[i].x += velocities[i].x * 0.1f; // speed scale
-            points[i].y += velocities[i].y * 0.1f;
-
-            // Bounce off edges
-            if (points[i].x < 0 || points[i].x >= width) {
-                velocities[i].x *= -1;
-            }
-            if (points[i].y < 0 || points[i].y >= height) {
-                velocities[i].y *= -1;
-            }
-        }
-    }
-
-}
-
 
 
 int main() {
-    int width = 256;
+    int width = 256;  // Increased resolution for better visibility
     int height = 256;
 
     // Load cube data
@@ -178,18 +134,25 @@ int main() {
     std::string obj_string = StringHelper::readFileToString(obj_path);
     std::vector<float3> cube_model_points = ObjLoader::load_obj_file(obj_string);
 
+    if (cube_model_points.empty()) {
+        std::cerr << "Failed to load cube model or model is empty!" << std::endl;
+        return -1;
+    }
+
     std::vector<float3> triangle_colors(cube_model_points.size() / 3);
     for(int i = 0; i < cube_model_points.size() / 3; i++){
         triangle_colors[i] = Math::random_color();
     }
 
-
     Model cube_model(cube_model_points, triangle_colors);
     RenderTarget render_target(width, height);
+    
+    std::cout << "Loaded points: " << cube_model_points.size() << std::endl;
+    std::cout << "Number of triangles: " << cube_model_points.size() / 3 << std::endl;
 
     render(cube_model, render_target);
     write_image_to_file(render_target.color_buffer, render_target.Width, render_target.Height, "Test");
 
+    std::cout << "Rendering complete! Check Test.bmp" << std::endl;
     return 0;
 }
-//za84rr1sje@vwhins.com

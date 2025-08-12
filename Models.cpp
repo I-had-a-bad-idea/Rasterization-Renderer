@@ -8,44 +8,40 @@
 
 
 // not so efficient and incomplete obj parser
-std::vector<float3> ObjLoader::load_obj_file(std::string obj_string){
-    std::vector<float3> all_points;
-    std::vector<float3> triangle_points;  // each set of 3 points is a triangle
+std::vector<float3> ObjLoader::load_obj_file(std::string objString) {
+    std::vector<float3> allPoints;
+    std::vector<float3> trianglePoints; // each set of 3 points is a triangle
 
-    std::istringstream iss(obj_string);
-    // for every line in the string
-    for (std::string line; std::getline(iss, line); ){
-        if(line.rfind("v ", 0) == 0){ // vertex position
+    std::istringstream stream(objString);
+    std::string line;
+
+    while (std::getline(stream, line)) {
+        if (line.rfind("v ", 0) == 0) { // vertex position
             auto parts = StringHelper::split(line.substr(2), ' ');
-            if(parts.size() < 3) continue;
+            if (parts.size() < 3) continue;
 
             float x = std::stof(parts[0]);
             float y = std::stof(parts[1]);
             float z = std::stof(parts[2]);
-            all_points.emplace_back(float3(x, y, z));
+            allPoints.emplace_back(x, y, z);
         }
-        else if(line.rfind("f ", 0) == 0){ //face indices
-            auto face_index_groups = StringHelper::split(line.substr(2), ' ');
-            
-            for(int i = 0; i < face_index_groups.size(); i++){
-                auto index_group_str = StringHelper::split(face_index_groups[i], '/');
-                int point_index = std::stoi(index_group_str[0]) -1;
+        else if (line.rfind("f ", 0) == 0) { // face indices
+            auto faceIndexGroups = StringHelper::split(line.substr(2), ' ');
 
-                //n-gon triangle fan handling
-                if(i >= 3){
-                    triangle_points.emplace_back(triangle_points[triangle_points.size() - (3 * i - 6)]);
-                }
-                if(i >= 3){
-                    triangle_points.emplace_back(triangle_points[triangle_points.size() - 2]);
-                }
-                triangle_points.emplace_back(all_points[point_index]);
+            for (int i = 0; i < static_cast<int>(faceIndexGroups.size()); i++) {
+                auto indexGroupStr = StringHelper::split(faceIndexGroups[i], '/');
+                int pointIndex = std::stoi(indexGroupStr[0]) - 1;
 
+                if (i >= 3) // n-gon triangle fan handling
+                    trianglePoints.push_back(trianglePoints[trianglePoints.size() - (3 * i - 6)]);
+                if (i >= 3)
+                    trianglePoints.push_back(trianglePoints[trianglePoints.size() - 2]);
 
+                trianglePoints.push_back(allPoints[pointIndex]);
             }
         }
     }
-
-return triangle_points;
+    return trianglePoints;
 }
 
 Model::Model(std::vector<float3> points, std::vector<float3> colors){
