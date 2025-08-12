@@ -84,14 +84,14 @@ void write_image_to_file(std::vector<float3>& image, int width, int height, cons
     }
 }
 
-void render(Object model, RenderTarget& target) {
+void render(Object model, RenderTarget& target, float fov) {
     // Clear the color buffer first
     std::fill(target.color_buffer.begin(), target.color_buffer.end(), float3(0.0f, 0.0f, 0.0f)); // Blackbackground
     
     for(int i = 0; i < model.Points.size(); i += 3) {
-        float2 a = Math::world_to_screen(model.Points[i + 0], model.Object_transform, target.Size);
-        float2 b = Math::world_to_screen(model.Points[i + 1], model.Object_transform, target.Size);
-        float2 c = Math::world_to_screen(model.Points[i + 2], model.Object_transform, target.Size);
+        float3 a = Math::world_to_screen(model.Points[i + 0], model.Obj_Transform, target.Size, fov);
+        float3 b = Math::world_to_screen(model.Points[i + 1], model.Obj_Transform, target.Size, fov);
+        float3 c = Math::world_to_screen(model.Points[i + 2], model.Obj_Transform, target.Size, fov);
 
         std::cout << "Triangle " << (i/3) << ": ";
         std::cout << "(" << model.Points[i + 0].x << ", " << model.Points[i + 0].y << ", " << model.Points[i + 0].z << ") -> (" << a.x << ", " << a.y << ") \t";
@@ -116,45 +116,59 @@ void render(Object model, RenderTarget& target) {
         // Loop over the block
         for(int y = block_start_y; y <= block_end_y; y++) {
             for(int x = block_start_x; x <= block_end_x; x++) {
-                // Add 0.5 offset for pixel center sampling
-                if(Math::point_in_triangle(a, b, c, float2(x + 0.5f, y + 0.5f))) {
-                    target.color_buffer[y * target.Width + x] = model.Triangle_colors[color_index];
+                float2 p(x + 0.5f, y + 0.5f);
+                float3 weights;
+
+                if(Math::point_in_triangle(float2(a.x, a.y), float2(b.x, b.y), float2(c.x, c.y), p, weights)){
+
+                    float3 depths(a.z, b.z, c.z);
+                    float depth = Math::dot(depths, weights);
+                    if(depth > target.depth_buffer[y * target.Width + x]) continue;
+
+                    
+                    // Update pixel if nothing has been drawn nearer
+                    target.color_buffer[y * target.Width + x] = model.Triangle_colors[i / 3];
+                    target.depth_buffer[y * target.Width + x] = depth;
+
                 }
+
             }
         }
     }
 }
 
+Object load_object(std::string path, float3 position, float yaw, float pitch){
+    // Load model data
+    std::string obj_path = std::filesystem::current_path().string() + path;
+    std::string obj_string = StringHelper::readFileToString(obj_path);
+    std::vector<float3> object_points = ObjLoader::load_obj_file(obj_string);
+
+   if (object_points.empty()) {
+       std::cerr << "Failed to load model or model is empty!" << std::endl;
+       throw std::runtime_error("Failed to load model: " + path);
+   }
+
+    // Create random colors
+    std::vector<float3> triangle_colors(object_points.size() / 3);
+    for(int i = 0; i < object_points.size() / 3; i++){
+        triangle_colors[i] = Math::random_color();
+    }
+    return Object(object_points, triangle_colors, position);
+}
 
 int main() {
     int width = 256 * 4;  // Increased resolution for better visibility
     int height = 256 * 4;
-    
+    float fov = 90;
 
-    // Load cube data
-    std::string obj_path = std::filesystem::current_path().string() + "/Objects/Cube.obj";
-    std::string obj_string = StringHelper::readFileToString(obj_path);
-    std::vector<float3> cube_model_points = ObjLoader::load_obj_file(obj_string);
+    Object monkey(load_object("/Objects/Monkey.obj", float3(0, 0, 2), 30, 50));
 
-    if (cube_model_points.empty()) {
-        std::cerr << "Failed to load cube model or model is empty!" << std::endl;
-        return -1;
-    }
-
-    std::vector<float3> triangle_colors(cube_model_points.size() / 3);
-    for(int i = 0; i < cube_model_points.size() / 3; i++){
-        triangle_colors[i] = Math::random_color();
-    }
-
-    Object cube_model(cube_model_points, triangle_colors);
     RenderTarget render_target(width, height);
+    render(monkey, render_target, fov);
+    write_image_to_file(render_target.color_buffer, render_target.Width, render_target.Height, "Color");
     
-    std::cout << "Loaded points: " << cube_model_points.size() << std::endl;
-    std::cout << "Number of triangles: " << cube_model_points.size() / 3 << std::endl;
-
-    render(cube_model, render_target);
-    write_image_to_file(render_target.color_buffer, render_target.Width, render_target.Height, "Cube-rotated");
-
     std::cout << "Rendering complete! Check Test.bmp" << std::endl;
     return 0;
 }
+
+//odaucm71bg@cmhvzylmfc.com

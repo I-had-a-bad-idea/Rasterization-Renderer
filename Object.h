@@ -15,9 +15,9 @@ class Object {
 public:
     std::vector<float3> Points;
     std::vector<float3> Triangle_colors;
-    ObjectTransform Object_transform;
+    ObjectTransform Obj_Transform;
 
-    Object(std::vector<float3> points, std::vector<float3> colors);
+    Object(std::vector<float3> points, std::vector<float3> colors, float3 position);
 };
 
 #endif

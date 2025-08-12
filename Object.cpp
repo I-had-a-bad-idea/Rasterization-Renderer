@@ -44,7 +44,8 @@ std::vector<float3> ObjLoader::load_obj_file(std::string objString) {
     return trianglePoints;
 }
 
-Object::Object(std::vector<float3> points, std::vector<float3> colors){
+Object::Object(std::vector<float3> points, std::vector<float3> colors, float3 position){
     Points = points;
     Triangle_colors = colors;
+    Obj_Transform.Position = position;
 }

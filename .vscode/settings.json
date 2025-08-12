@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "cmath": "cpp"
+        "cmath": "cpp",
+        "xstring": "cpp",
+        "optional": "cpp"
     }
 }
