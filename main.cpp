@@ -11,9 +11,10 @@
 #include <ctime>
 #include "Vector.h"
 #include "RenderTarget.h"
-#include "Model.h"
+#include "Object.h"
 #include "Maths.h"
 #include "StringHelper.h"
+#include <raylib.h>
 
 void write_image_to_file(std::vector<float3>& image, int width, int height, const std::string& name) {
     if (width <= 0 || height <= 0) {
@@ -83,14 +84,14 @@ void write_image_to_file(std::vector<float3>& image, int width, int height, cons
     }
 }
 
-void render(Model model, RenderTarget& target) {
+void render(Object model, RenderTarget& target) {
     // Clear the color buffer first
     std::fill(target.color_buffer.begin(), target.color_buffer.end(), float3(0.0f, 0.0f, 0.0f)); // Blackbackground
     
     for(int i = 0; i < model.Points.size(); i += 3) {
-        float2 a = Math::world_to_screen(model.Points[i + 0], model.Model_transform, target.Size);
-        float2 b = Math::world_to_screen(model.Points[i + 1], model.Model_transform, target.Size);
-        float2 c = Math::world_to_screen(model.Points[i + 2], model.Model_transform, target.Size);
+        float2 a = Math::world_to_screen(model.Points[i + 0], model.Object_transform, target.Size);
+        float2 b = Math::world_to_screen(model.Points[i + 1], model.Object_transform, target.Size);
+        float2 c = Math::world_to_screen(model.Points[i + 2], model.Object_transform, target.Size);
 
         std::cout << "Triangle " << (i/3) << ": ";
         std::cout << "(" << model.Points[i + 0].x << ", " << model.Points[i + 0].y << ", " << model.Points[i + 0].z << ") -> (" << a.x << ", " << a.y << ") \t";
@@ -128,6 +129,7 @@ void render(Model model, RenderTarget& target) {
 int main() {
     int width = 256 * 4;  // Increased resolution for better visibility
     int height = 256 * 4;
+    
 
     // Load cube data
     std::string obj_path = std::filesystem::current_path().string() + "/Objects/Cube.obj";
@@ -144,7 +146,7 @@ int main() {
         triangle_colors[i] = Math::random_color();
     }
 
-    Model cube_model(cube_model_points, triangle_colors);
+    Object cube_model(cube_model_points, triangle_colors);
     RenderTarget render_target(width, height);
     
     std::cout << "Loaded points: " << cube_model_points.size() << std::endl;
