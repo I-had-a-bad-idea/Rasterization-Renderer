@@ -36,24 +36,32 @@ bool Math::point_on_right_side_of_line(float2 a, float2 b, float2 p){
 
 // Test if point p is inside triangle abc
 bool Math::point_in_triangle(float2 a, float2 b, float2 c, float2 p){
-    // Calculate barycentric coordinates
-    float2 v0 = {c.x - a.x, c.y - a.y};
-    float2 v1 = {b.x - a.x, b.y - a.y};
-    float2 v2 = {p.x - a.x, p.y - a.y};
+//    // Calculate barycentric coordinates
+//    float2 v0 = {c.x - a.x, c.y - a.y};
+//    float2 v1 = {b.x - a.x, b.y - a.y};
+//    float2 v2 = {p.x - a.x, p.y - a.y};
+//
+//    float dot00 = dot(v0, v0);
+//    float dot01 = dot(v0, v1);
+//   float dot02 = dot(v0, v2);
+//    float dot11 = dot(v1, v1);
+//    float dot12 = dot(v1, v2);
+//
+//    // Compute barycentric coordinates
+//    float invDenom = 1 / (dot00 * dot11 - dot01 * dot01);
+//    float u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+//    float v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+//
+//    // Check if point is in triangle
+//    return (u >= 0) && (v >= 0) && (u + v <= 1);
 
-    float dot00 = dot(v0, v0);
-    float dot01 = dot(v0, v1);
-    float dot02 = dot(v0, v2);
-    float dot11 = dot(v1, v1);
-    float dot12 = dot(v1, v2);
+    bool side_ab = point_on_right_side_of_line(a, b, p);
+    bool side_bc = point_on_right_side_of_line(b, c, p);
+    bool side_ca = point_on_right_side_of_line(c, a, p);
 
-    // Compute barycentric coordinates
-    float invDenom = 1 / (dot00 * dot11 - dot01 * dot01);
-    float u = (dot11 * dot02 - dot01 * dot12) * invDenom;
-    float v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+    return side_ab && side_bc && side_ca;
 
-    // Check if point is in triangle
-    return (u >= 0) && (v >= 0) && (u + v <= 1);
+
 }
 
 // Converts world-space coordinates into screen-space coordinate
@@ -61,7 +69,7 @@ float2 Math::world_to_screen(float3 vertex, Transform transform, float2 numPixel
     // Scale world coordinates to fit nicely in the screen
     float3 vertex_world;
     vertex_world = transform.ToWorldPoint(vertex);
-    float scale = 50.0f; // Adjust this to make the cube larger/smaller
+    float scale = 200.0f; // Adjust this to make the cube larger/smaller
     
     // Simple orthographic projection (ignore Z for now)
     float screenX = numPixels.x / 2.0f + vertex_world.x * scale;

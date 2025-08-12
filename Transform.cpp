@@ -2,8 +2,8 @@
 #include <cmath>
 
 
-Transform::Transform() : Yaw(60.0f) {} 
-Transform::Transform(float yaw) : Yaw(yaw) {}
+Transform::Transform() : Yaw(30.0f), Pitch(40.0f) {} 
+Transform::Transform(float yaw, float pitch) : Yaw(yaw), Pitch(pitch) {}
 
 float3 Transform::ToWorldPoint(float3 p)
 {
@@ -14,9 +14,18 @@ float3 Transform::ToWorldPoint(float3 p)
 // Calculate right/up/forward vectors (i, j, k)
 std::tuple<float3, float3, float3> Transform::GetBasisVectors()
 {
-    float3 ihat(std::cos(Yaw), 0, std::sin(Yaw));
-    float3 jhat(0, 1, 0);
-    float3 khat(-std::sin(Yaw), 0, std::cos(Yaw));
+    float3 ihat_yaw(std::cos(Yaw), 0, std::sin(Yaw));
+    float3 jhat_yaw(0, 1, 0);
+    float3 khat_yaw(-std::sin(Yaw), 0, std::cos(Yaw));
+
+    float3 ihat_pitch(1, 0, 0);
+    float3 jhat_pitch(0, std::cos(Pitch), -std::sin(Pitch));
+    float3 khat_pitch(0, std::sin(Pitch), std::cos(Pitch));
+
+    float3 ihat(TransformVector(ihat_yaw, jhat_yaw, khat_yaw, ihat_pitch));
+    float3 jhat(TransformVector(ihat_yaw, jhat_yaw, khat_yaw, jhat_pitch));
+    float3 khat(TransformVector(ihat_yaw, jhat_yaw, khat_yaw, khat_pitch));
+
     return std::make_tuple(ihat, jhat, khat);
 }
 

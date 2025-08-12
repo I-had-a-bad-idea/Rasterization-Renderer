@@ -6,9 +6,10 @@ class Transform
 {
 public:
     float Yaw; // Rotation around y axis
+    float Pitch;
 
     Transform();                 
-    Transform(float yaw);         
+    Transform(float yaw, float pitch);         
     
     // Transform a point from local space to world space
     float3 ToWorldPoint(float3 p);

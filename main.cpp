@@ -126,8 +126,8 @@ void render(Model model, RenderTarget& target) {
 
 
 int main() {
-    int width = 256;  // Increased resolution for better visibility
-    int height = 256;
+    int width = 256 * 4;  // Increased resolution for better visibility
+    int height = 256 * 4;
 
     // Load cube data
     std::string obj_path = std::filesystem::current_path().string() + "/Objects/Cube.obj";
