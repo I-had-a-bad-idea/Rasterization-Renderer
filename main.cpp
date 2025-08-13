@@ -49,6 +49,7 @@ void Run(RenderTarget target, std::vector<Object> objects, float fov){
     std::vector<Color> textureBytes(target.Width * target.Height * 4); // RGBA
 
     // Render loop
+    SetTargetFPS(60);
 
     while(!WindowShouldClose()){
 
@@ -69,13 +70,14 @@ void Run(RenderTarget target, std::vector<Object> objects, float fov){
 
 
 int main() {
-    int width = 256 * 4;  // Increased resolution for better visibility
-    int height = 256 * 4;
+    int width = 1920;  // Increased resolution for better visibility
+    int height = 1080;
     float fov = 90; // FOV in degrees
 
+    Object flooar(load_object("/Objects/Plane.obj", float3(0, -2, 1), float3(0, 0, 0)));
     Object monkey(load_object("/Objects/Monkey.obj", float3(0, 0, 3), float3(0, 3.141592, 0)));
     Object cube0(load_object("/Objects/Cube.obj", float3(3, 2, 5), float3(0, 0, 0)));
-    Object cube1(load_object("/Objects/Cube.obj", float3(-3, 2, 5), float3(0, 0, 0)));
+    Object cube1(load_object("/Objects/Cube.obj", float3(-3, 2, -5), float3(0, 0, 0)));
 
 
     RenderTarget render_target(width, height);
