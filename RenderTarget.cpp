@@ -5,5 +5,6 @@ RenderTarget::RenderTarget(int width, int height){
     Height = height;
     Size = float2(width, height);
     color_buffer.resize(width * height);
-    depth_buffer.resize(width * height, std::numeric_limits<float>::infinity());
+    // Initialize depth buffer with maximum depth values
+    depth_buffer.resize(width * height, 1000.0f);
 }

@@ -71,6 +71,8 @@ void Rasterizer::write_image_to_file(std::vector<float3>& image, int width, int 
 void Rasterizer::Render(const std::vector<Object>& models, RenderTarget& target, float fov) {
     // Clear the color buffer first
     std::fill(target.color_buffer.begin(), target.color_buffer.end(), float3(0.0f, 0.0f, 0.0f)); // Black background
+    // Reset depth buffer with large depth values
+    std::fill(target.depth_buffer.begin(), target.depth_buffer.end(), 1000.0f);
     
     // Loop over each object in the scene
     for (const auto& model : models) {
@@ -79,16 +81,20 @@ void Rasterizer::Render(const std::vector<Object>& models, RenderTarget& target,
             float3 b = Math::world_to_screen(model.Points[i + 1], model.Obj_Transform, target.Size, fov);
             float3 c = Math::world_to_screen(model.Points[i + 2], model.Obj_Transform, target.Size, fov);
 
-            std::cout << "Triangle " << (i / 3) << ": ";
-            std::cout << "(" << model.Points[i + 0].x << ", " << model.Points[i + 0].y << ", " << model.Points[i + 0].z << ") -> (" << a.x << ", " << a.y << ") \t";
-            std::cout << "(" << model.Points[i + 1].x << ", " << model.Points[i + 1].y << ", " << model.Points[i + 1].z << ") -> (" << b.x << ", " << b.y << ") \t";
-            std::cout << "(" << model.Points[i + 2].x << ", " << model.Points[i + 2].y << ", " << model.Points[i + 2].z << ") -> (" << c.x << ", " << c.y << ")" << std::endl;
+            // Skip triangles that are behind the camera
+            if (a.z <= 0.1f || b.z <= 0.1f || c.z <= 0.1f) continue;
 
-            // Triangle bounds
+            // Ensure we have a valid triangle color index
+            int color_index = (i / 3) % model.Triangle_colors.size();
+
+            // Triangle bounds for scissor test
             float min_x = std::min({a.x, b.x, c.x});
             float min_y = std::min({a.y, b.y, c.y});
             float max_x = std::max({a.x, b.x, c.x});
             float max_y = std::max({a.y, b.y, c.y});
+
+            // Skip triangles completely outside screen bounds
+            if (max_x < 0 || min_x >= target.Width || max_y < 0 || min_y >= target.Height) continue;
 
             // Pixel block covering the triangle bounds
             int block_start_x = std::max(0, (int)std::floor(min_x));
@@ -96,23 +102,22 @@ void Rasterizer::Render(const std::vector<Object>& models, RenderTarget& target,
             int block_end_x = std::min(target.Width - 1, (int)std::ceil(max_x));
             int block_end_y = std::min(target.Height - 1, (int)std::ceil(max_y));
 
-            // Ensure we have a valid triangle color index
-            int color_index = (i / 3) % model.Triangle_colors.size();
-
             // Loop over the block
             for (int y = block_start_y; y <= block_end_y; y++) {
                 for (int x = block_start_x; x <= block_end_x; x++) {
                     float2 p(x + 0.5f, y + 0.5f);
                     float3 weights;
 
+                    
                     if (Math::point_in_triangle(float2(a.x, a.y), float2(b.x, b.y), float2(c.x, c.y), p, weights)) {
-                        float3 depths(a.z, b.z, c.z);
-                        float depth = Math::dot(depths, weights);
-                        if (depth > target.depth_buffer[y * target.Width + x]) continue;
-
-                        // Update pixel if nothing has been drawn nearer
-                        target.color_buffer[y * target.Width + x] = model.Triangle_colors[color_index];
-                        target.depth_buffer[y * target.Width + x] = depth;
+                        // Interpolate depth using barycentric coordinates
+                        float depth = a.z * weights.x + b.z * weights.y + c.z * weights.z;
+                        
+                        // Depth test: render if this pixel is closer
+                        if (depth < target.depth_buffer[y * target.Width + x]) {
+                            target.color_buffer[y * target.Width + x] = model.Triangle_colors[color_index];
+                            target.depth_buffer[y * target.Width + x] = depth;
+                        }
                     }
                 }
             }

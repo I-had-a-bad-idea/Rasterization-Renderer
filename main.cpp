@@ -71,18 +71,18 @@ void Run(RenderTarget target, std::vector<Object> objects, float fov){
 int main() {
     int width = 256 * 4;  // Increased resolution for better visibility
     int height = 256 * 4;
-    float fov = 90;
+    float fov = 90; // FOV in degrees
 
-    Object monkey(load_object("/Objects/Monkey.obj", float3(0, 0, 2), float3(90 + 45, 0, 0)));
-    Object cube0(load_object("/Objects/Cube.obj", float3(3, 2, 4), float3(0, 0, 0)));
-    Object cube1(load_object("/Objects/Cube.obj", float3(-3, 2, 4), float3(0, 0, 0)));
+    Object monkey(load_object("/Objects/Monkey.obj", float3(0, 0, 3), float3(0, 3.141592, 0)));
+    Object cube0(load_object("/Objects/Cube.obj", float3(3, 2, 5), float3(0, 0, 0)));
+    Object cube1(load_object("/Objects/Cube.obj", float3(-3, 2, 5), float3(0, 0, 0)));
 
 
     RenderTarget render_target(width, height);
 
     std::vector<Object> objects = {monkey, cube0, cube1};
 
-    Run(render_target, objects, 60);    
+    Run(render_target, objects, fov);  // Pass the correct FOV value
 //  Rasterizer::Render(objects, render_target, fov);
 //  Rasterizer::write_image_to_file(render_target.color_buffer, render_target.Width, render_target.Height, "Color");
     
