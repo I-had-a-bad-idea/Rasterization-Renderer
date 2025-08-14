@@ -8,25 +8,10 @@
 #include "Rendering/RenderTarget.h"
 #include "Rendering/Rasterizer.h"
 #include "raylib.h"
+#include "Obj_loader.h"
 
-Object load_object(std::string path, float3 position, float3 rotatation){
-    // Load model data
-    std::string obj_path = std::filesystem::current_path().string() + path;
-    std::string obj_string = StringHelper::readFileToString(obj_path);
-    std::vector<float3> object_points = ObjLoader::load_obj_file(obj_string);
 
-   if (object_points.empty()) {
-       std::cerr << "Failed to load model or model is empty!" << std::endl;
-       throw std::runtime_error("Failed to load model: " + path);
-   }
 
-    // Create random colors
-    std::vector<float3> triangle_colors(object_points.size() / 3);
-    for(int i = 0; i < object_points.size() / 3; i++){
-        triangle_colors[i] = Math::random_color();
-    }
-    return Object(object_points, triangle_colors, position, rotatation);
-}
 
 void ToFlatByteArray(RenderTarget &renderTarget, std::vector<Color> &data) {
     data.resize(renderTarget.color_buffer.size());
@@ -74,10 +59,10 @@ int main() {
     int height = 1080;
     float fov = 90; // FOV in degrees
 
-    Object flooar(load_object("/Objects/Plane.obj", float3(0, -2, 1), float3(0, 0, 0)));
-    Object monkey(load_object("/Objects/Monkey.obj", float3(0, 0, 3), float3(0, 3.141592, 0)));
-    Object cube0(load_object("/Objects/Cube.obj", float3(3, 2, 5), float3(0, 0, 0)));
-    Object cube1(load_object("/Objects/Cube.obj", float3(-3, 2, -5), float3(0, 0, 0)));
+    Object flooar(ObjLoader::load_object("/Objects/Plane.obj", float3(0, -2, 1), float3(0, 0, 0)));
+    Object monkey(ObjLoader::load_object("/Objects/Monkey.obj", float3(0, 0, 3), float3(0, 3.141592, 0)));
+    Object cube0(ObjLoader::load_object("/Objects/Cube.obj", float3(3, 2, 5), float3(0, 0, 0)));
+    Object cube1(ObjLoader::load_object("/Objects/Cube.obj", float3(-3, 2, -5), float3(0, 0, 0)));
 
 
     RenderTarget render_target(width, height);

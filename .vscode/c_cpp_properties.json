@@ -8,7 +8,8 @@
                 "${workspaceFolder}/Helper",
                 "${workspaceFolder}/Math",
                 "${workspaceFolder}/Object",
-                "${workspaceFolder}/Rendering"
+                "${workspaceFolder}/Rendering",
+                "${workspaceFolder}/Scenes"
                 
             ],
             "defines": [

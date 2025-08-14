@@ -4,15 +4,9 @@
 
 #include <vector>
 #include <string>
-
-
 #include "Maths.h"
 #include "ObjectTransform.h"
 
-class ObjLoader {
-public:
-    static std::vector<float3> load_obj_file(std::string obj_string);
-};
 
 class Object {
 public:
