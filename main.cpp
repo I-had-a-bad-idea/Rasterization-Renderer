@@ -67,7 +67,6 @@ int main() {
     scene.Setup(); 
 
     RenderTarget render_target(width, height);
-
     Run(render_target, scene, fov);
     
     return 0;

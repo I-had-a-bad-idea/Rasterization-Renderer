@@ -17,9 +17,12 @@ class ObjectTransform{
         float3 ToWorldPoint(float3 p);
         float3 ToLocalPoint(float3 world_point);
 
-    private:
         // Calculate right/up/forward vectors (i, j, k)
         std::tuple<float3, float3, float3> GetBasisVectors();
+        std::tuple<float3, float3, float3> GetInverseBasisVectors();
+
+    private:
+        
 
         // Move each coordinate of given vector along the corresponding basis vector
         static float3 TransformVector(float3 ihat, float3 jhat, float3 khat, float3 v);

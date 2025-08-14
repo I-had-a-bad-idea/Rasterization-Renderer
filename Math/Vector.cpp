@@ -28,7 +28,7 @@ float3 float3::operator*(float scalar){
     return float3(x * scalar, y * scalar, z * scalar);
 }
 
-float3 float3::operator/(float scalar){
+float3 float3::operator/(float scalar) const {
     return float3(x / scalar, y / scalar, z / scalar);
 }
 
@@ -50,4 +50,15 @@ float3& float3::operator*=(float scalar) {
 float3& float3::operator/=(float scalar) {
     x /= scalar; y /= scalar; z /= scalar;
     return *this;
+}
+
+float float3::length() const {
+    return std::sqrt(x * x + y * y + z * z);
+}
+
+float3 float3::Normalize(const float3& v) {
+    float len = v.length();
+    if (len > 0.0f)
+        return v / len;
+    return float3(0.0f, 0.0f, 0.0f);
 }

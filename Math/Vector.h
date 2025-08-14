@@ -23,16 +23,19 @@ public:
     void set_r(float value);
     void set_g(float value);
     void set_b(float value);
-    
+
     float3 operator+(const float3& other);
     float3 operator-(const float3& other);
     float3 operator*(float scalar);
-    float3 operator/(float scalar);
+    float3 operator/(float scalar) const;
 
     float3& operator+=(const float3& other);
     float3& operator-=(const float3& other);
     float3& operator*=(float scalar);
     float3& operator/=(float scalar);
+
+    float length() const;
+    float3 Normalize(const float3& v);
 };
 
 #endif
