@@ -27,7 +27,7 @@ void ToFlatByteArray(RenderTarget &renderTarget, std::vector<Color> &data) {
 }
 
 //TODO make this use a "scene", which also has an update cycle, using this line:   scene.Update(target, GetFrameTime());
-void Run(RenderTarget target, Scene scene, float fov){
+void Run(RenderTarget& target, Scene& scene, float fov){
     // Create window
     InitWindow(target.Width, target.Height, "Rasterization-Renderer");
     Texture2D texture(LoadTextureFromImage(GenImageColor(target.Width, target.Height, BLACK)));
@@ -39,7 +39,10 @@ void Run(RenderTarget target, Scene scene, float fov){
 
     while(!WindowShouldClose()){
 
+        scene.Update(target, GetFrameTime());
+
         Rasterizer::Render(scene, target, fov);
+
 
         // Write rasterizer output to texture and display on window
         ToFlatByteArray(target, textureBytes);

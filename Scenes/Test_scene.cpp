@@ -11,6 +11,8 @@ void TestScene::Setup(){
 }
 
 
-void TestScene::Update(RenderTarget target, float delta_time) {
-
+void TestScene::Update(RenderTarget& target, float delta_time) {
+    for (auto& obj : objects) {
+        obj.Obj_Transform.Pitch += 3 * delta_time; 
+    }
 }

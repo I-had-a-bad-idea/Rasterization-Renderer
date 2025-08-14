@@ -68,7 +68,7 @@ void Rasterizer::write_image_to_file(std::vector<float3>& image, int width, int 
     }
 }
 
-void Rasterizer::Render(Scene scene, RenderTarget& target, float fov) {
+void Rasterizer::Render(Scene& scene, RenderTarget& target, float fov) {
     // Clear the color buffer first
     std::fill(target.color_buffer.begin(), target.color_buffer.end(), float3(0.0f, 0.0f, 0.0f)); // Black background
     // Reset depth buffer with large depth values

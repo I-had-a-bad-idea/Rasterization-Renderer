@@ -13,9 +13,9 @@ class Scene{
     public:
         std::vector<Object> objects;
 
-        void Update(RenderTarget target, float delta_time); // Should be overwritten
+        virtual void Update(RenderTarget& target, float delta_time){}; // Should be overwritten
 
-        void Setup();
+        virtual void Setup(){};
 };
 
 

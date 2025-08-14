@@ -5,7 +5,7 @@
 
 class TestScene : public Scene{
     public:
-        void Update(RenderTarget target, float delta_time);
+        void Update(RenderTarget& target, float delta_time);
         void Setup();
 };
 
