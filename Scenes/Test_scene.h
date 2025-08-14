@@ -5,8 +5,8 @@
 
 class TestScene : public Scene{
     public:
-        void Update(RenderTarget target, float delta_time) override;
-        void Setup() override;
+        void Update(RenderTarget target, float delta_time);
+        void Setup();
 };
 
 

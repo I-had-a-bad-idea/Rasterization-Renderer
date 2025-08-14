@@ -13,11 +13,12 @@
 #include "RenderTarget.h"
 #include "Object.h"
 #include "Maths.h"
+#include "Scene.h"
 
 class Rasterizer{
     public:
         static void write_image_to_file(std::vector<float3>& image, int width, int height, const std::string& name);
-        static void Render(const std::vector<Object>& models, RenderTarget& target, float fov);
+        static void Render(Scene scene, RenderTarget& target, float fov);
 
 };
 

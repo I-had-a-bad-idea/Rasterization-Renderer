@@ -9,6 +9,7 @@
 #include "Rendering/Rasterizer.h"
 #include "raylib.h"
 #include "Obj_loader.h"
+#include "Test_scene.h"
 
 
 
@@ -26,7 +27,7 @@ void ToFlatByteArray(RenderTarget &renderTarget, std::vector<Color> &data) {
 }
 
 //TODO make this use a "scene", which also has an update cycle, using this line:   scene.Update(target, GetFrameTime());
-void Run(RenderTarget target, std::vector<Object> objects, float fov){
+void Run(RenderTarget target, Scene scene, float fov){
     // Create window
     InitWindow(target.Width, target.Height, "Rasterization-Renderer");
     Texture2D texture(LoadTextureFromImage(GenImageColor(target.Width, target.Height, BLACK)));
@@ -38,7 +39,7 @@ void Run(RenderTarget target, std::vector<Object> objects, float fov){
 
     while(!WindowShouldClose()){
 
-        Rasterizer::Render(objects, target, fov);
+        Rasterizer::Render(scene, target, fov);
 
         // Write rasterizer output to texture and display on window
         ToFlatByteArray(target, textureBytes);
@@ -59,17 +60,12 @@ int main() {
     int height = 1080;
     float fov = 90; // FOV in degrees
 
-    Object flooar(ObjLoader::load_object("/Objects/Plane.obj", float3(0, -2, 1), float3(0, 0, 0)));
-    Object monkey(ObjLoader::load_object("/Objects/Monkey.obj", float3(0, 0, 3), float3(0, 3.141592, 0)));
-    Object cube0(ObjLoader::load_object("/Objects/Cube.obj", float3(3, 2, 5), float3(0, 0, 0)));
-    Object cube1(ObjLoader::load_object("/Objects/Cube.obj", float3(-3, 2, -5), float3(0, 0, 0)));
-
+    TestScene scene;
+    scene.Setup(); 
 
     RenderTarget render_target(width, height);
 
-    std::vector<Object> objects = {monkey, cube0, cube1};
-
-    Run(render_target, objects, fov);
+    Run(render_target, scene, fov);
     
     return 0;
 }

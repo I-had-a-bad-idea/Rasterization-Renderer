@@ -68,13 +68,14 @@ void Rasterizer::write_image_to_file(std::vector<float3>& image, int width, int 
     }
 }
 
-void Rasterizer::Render(const std::vector<Object>& models, RenderTarget& target, float fov) {
+void Rasterizer::Render(Scene scene, RenderTarget& target, float fov) {
     // Clear the color buffer first
     std::fill(target.color_buffer.begin(), target.color_buffer.end(), float3(0.0f, 0.0f, 0.0f)); // Black background
     // Reset depth buffer with large depth values
     std::fill(target.depth_buffer.begin(), target.depth_buffer.end(), 1000.0f);
     
     // Loop over each object in the scene
+    std::vector<Object> models(scene.objects);
     for (const auto& model : models) {
         for (size_t i = 0; i + 2 < model.Points.size(); i += 3) {
             float3 a = Math::world_to_screen(model.Points[i + 0], model.Obj_Transform, target.Size, fov);
