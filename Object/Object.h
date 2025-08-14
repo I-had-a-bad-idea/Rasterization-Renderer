@@ -1,9 +1,12 @@
 #ifndef Object_H
 #define Object_H
 
-#include "Vector.h"
+
 #include <vector>
 #include <string>
+
+
+#include "Maths.h"
 #include "ObjectTransform.h"
 
 class ObjLoader {

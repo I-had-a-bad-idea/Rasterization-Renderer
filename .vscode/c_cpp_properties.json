@@ -4,7 +4,11 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "C:/msys64/mingw64/include/"
+                "C:/msys64/mingw64/include/",
+                "${workspaceFolder}/Helper",
+                "${workspaceFolder}/Math",
+                "${workspaceFolder}/Object",
+                "${workspaceFolder}/Rendering"
                 
             ],
             "defines": [

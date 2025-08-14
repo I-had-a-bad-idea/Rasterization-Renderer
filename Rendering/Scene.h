@@ -9,7 +9,7 @@ class Scene{
     public: 
         std::vector<Object> objects;
 
-        void Update(RenderTarget target, float delta_time);
+        void Update(RenderTarget target, float delta_time); // Should be overwritten
 };
 
 

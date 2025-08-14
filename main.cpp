@@ -1,12 +1,12 @@
 #include <iostream>
 #include <string>
 #include <filesystem>
-#include "Object.h"
-#include "Vector.h"
-#include "StringHelper.h"
-#include "Maths.h"
-#include "RenderTarget.h"
-#include "Rasterizer.h"
+#include "Object/Object.h"
+#include "Math/Vector.h"
+#include "Helper/StringHelper.h"
+#include "Math/Maths.h"
+#include "Rendering/RenderTarget.h"
+#include "Rendering/Rasterizer.h"
 #include "raylib.h"
 
 Object load_object(std::string path, float3 position, float3 rotatation){
@@ -84,12 +84,9 @@ int main() {
 
     std::vector<Object> objects = {monkey, cube0, cube1};
 
-    Run(render_target, objects, fov);  // Pass the correct FOV value
-//  Rasterizer::Render(objects, render_target, fov);
-//  Rasterizer::write_image_to_file(render_target.color_buffer, render_target.Width, render_target.Height, "Color");
+    Run(render_target, objects, fov);
     
-    std::cout << "Rendering complete! Check Test.bmp" << std::endl;
     return 0;
 }
 
-//hecx9hs46g@xkxkud.com
+//5mp353v1ph@illubd.com
