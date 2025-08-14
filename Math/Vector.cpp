@@ -15,3 +15,39 @@ float float3::b() { return z; }
 void float3::set_r(float value) { x = std::clamp(value, 0.0f, 1.0f); }
 void float3::set_g(float value) { y = std::clamp(value, 0.0f, 1.0f); }
 void float3::set_b(float value) { z = std::clamp(value, 0.0f, 1.0f); }
+
+float3 float3::operator+(const float3& other){
+    return float3(x + other.x, y + other.y, z + other.z);
+}
+
+float3 float3::operator-(const float3& other){
+    return float3(x - other.x, y - other.y, z - other.z);
+}
+
+float3 float3::operator*(float scalar){
+    return float3(x * scalar, y * scalar, z * scalar);
+}
+
+float3 float3::operator/(float scalar){
+    return float3(x / scalar, y / scalar, z / scalar);
+}
+
+float3& float3::operator+=(const float3& other) {
+    x += other.x; y += other.y; z += other.z;
+    return *this;
+}
+
+float3& float3::operator-=(const float3& other) {
+    x -= other.x; y -= other.y; z -= other.z;
+    return *this;
+}
+
+float3& float3::operator*=(float scalar) {
+    x *= scalar; y *= scalar; z *= scalar;
+    return *this;
+}
+
+float3& float3::operator/=(float scalar) {
+    x /= scalar; y /= scalar; z /= scalar;
+    return *this;
+}
