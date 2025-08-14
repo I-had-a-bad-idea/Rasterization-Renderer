@@ -36,6 +36,7 @@ public:
 
     float length() const;
     float3 Normalize(const float3& v);
+    static float3 cross(const float3& a, const float3& b);
 };
 
 #endif

@@ -13,7 +13,8 @@ float3 ObjectTransform::ToWorldPoint(float3 p)
 
 float3 ObjectTransform::ToLocalPoint(float3 world_point) {
     auto [ihat, jhat, khat] = GetInverseBasisVectors();
-    return TransformVector(ihat, jhat, khat, world_point) - Position;
+    float3 relative = world_point - Position;
+    return TransformVector(ihat, jhat, khat, relative);
 }
 
 // Calculate right/up/forward vectors (i, j, k)
@@ -35,17 +36,11 @@ std::tuple<float3, float3, float3> ObjectTransform::GetBasisVectors()
 }
 
 std::tuple<float3, float3, float3> ObjectTransform::GetInverseBasisVectors(){
-    float3 ihat_yaw(std::cos(-Yaw), 0, std::sin(-Yaw));
-    float3 jhat_yaw(0, 1, 0);
-    float3 khat_yaw(-std::sin(-Yaw), 0, std::cos(-Yaw));
+    auto[ihat_, jhat_, khat_] = GetBasisVectors();
+    float3 ihat(ihat_.x, jhat_.x, khat_.x);
+    float3 jhat(ihat_.y, jhat_.y, khat_.y);
+    float3 khat(ihat_.z, jhat_.z, khat_.z);
 
-    float3 ihat_pitch(1, 0, 0);
-    float3 jhat_pitch(0, std::cos(-Pitch), -std::sin(-Pitch));
-    float3 khat_pitch(0, std::sin(-Pitch), std::cos(-Pitch));
-
-    float3 ihat(TransformVector(ihat_pitch, jhat_pitch, khat_pitch, ihat_yaw));
-    float3 jhat(TransformVector(ihat_pitch, jhat_pitch, khat_pitch, jhat_yaw));
-    float3 khat(TransformVector(ihat_pitch, jhat_pitch, khat_pitch, khat_yaw));
 
     return std::make_tuple(ihat, jhat, khat);
 }

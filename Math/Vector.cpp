@@ -62,3 +62,11 @@ float3 float3::Normalize(const float3& v) {
         return v / len;
     return float3(0.0f, 0.0f, 0.0f);
 }
+
+float3 float3::cross(const float3& a, const float3& b) {
+    return float3(
+        a.y * b.z - a.z * b.y,
+        a.z * b.x - a.x * b.z,
+        a.x * b.y - a.y * b.x
+    );
+}

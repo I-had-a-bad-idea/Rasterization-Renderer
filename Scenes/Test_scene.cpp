@@ -10,10 +10,11 @@ void TestScene::Setup(){
 }
 
 
+
 void TestScene::Update(RenderTarget& target, float delta_time) {
-    for (auto& obj : objects) {
-        obj.Obj_Transform.Pitch += 3 * delta_time; 
-    }
+    // for (auto& obj : objects) {
+    //     obj.Obj_Transform.Pitch += 3 * delta_time; 
+    // }
     
     const float mouse_sensitivity = 2;
 
@@ -41,5 +42,5 @@ void TestScene::Update(RenderTarget& target, float delta_time) {
     if(IsKeyDown(KEY_D)) move_delta += cam_right;
 
     camera_transform.Position += float3(move_delta) * camera_speed * delta_time;
-    camera_transform.Position.y = 1;
+   // camera_transform.Position.y = 1;
 }

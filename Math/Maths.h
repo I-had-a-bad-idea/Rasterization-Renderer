@@ -7,6 +7,7 @@
 #include <numbers>
 #include <cmath>
 
+
 class Math {
 public:
     static float random_float(float min, float max);
