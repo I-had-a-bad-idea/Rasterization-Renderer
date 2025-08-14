@@ -7,11 +7,13 @@
 #include "StringHelper.h"
 #include "Object.h"
 #include "Obj_loader.h"
-
+#include "Camera.h"
+#include "raylib.h"
 
 class Scene{
     public:
         std::vector<Object> objects;
+        Cam camera;
 
         virtual void Update(RenderTarget& target, float delta_time){}; // Should be overwritten
 

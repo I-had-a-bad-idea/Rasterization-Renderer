@@ -15,6 +15,7 @@ class ObjectTransform{
 
         // Transform a point from local space to world space
         float3 ToWorldPoint(float3 p);
+        float3 ToLocalPoint(float3 world_point);
 
     private:
         // Calculate right/up/forward vectors (i, j, k)

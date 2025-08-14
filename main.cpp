@@ -41,7 +41,7 @@ void Run(RenderTarget& target, Scene& scene, float fov){
 
         scene.Update(target, GetFrameTime());
 
-        Rasterizer::Render(scene, target, fov);
+        Rasterizer::Render(scene, target);
 
 
         // Write rasterizer output to texture and display on window

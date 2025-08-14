@@ -14,6 +14,12 @@ float3 ObjectTransform::ToWorldPoint(float3 p)
                 transformed_vector.z + Position.z);
 }
 
+float3 ObjectTransform::ToLocalPoint(float3 world_point) {
+    return float3(world_point.x - Position.x,
+                world_point.y - Position.y,
+                world_point.z - Position.z);
+}
+
 // Calculate right/up/forward vectors (i, j, k)
 std::tuple<float3, float3, float3> ObjectTransform::GetBasisVectors()
 {

@@ -37,6 +37,14 @@ float2 Math::perpendicular(float2 vec){
     return float2(vec.y, -vec.x);
 } 
 
+float Math::degrees_to_radians(float degrees) {
+    return degrees * M_PI / 180.0f;
+}
+
+float Math::radians_to_degrees(float radians) {
+    return radians * 180.0f / M_PI;
+}
+
 // Check if point p is on the right side of the line a -> b
 bool Math::point_on_right_side_of_line(float2 a, float2 b, float2 p){
     float2 ap(p.x - a.x, p.y - a.y);
@@ -85,16 +93,18 @@ bool Math::point_in_triangle(float2 a, float2 b, float2 c, float2 p, float3& wei
     return false;
 }
 
+
 // Converts world-space coordinates into screen-space coordinate
-float3 Math::world_to_screen(float3 vertex, ObjectTransform transform, float2 numPixels, float fov) {
+float3 Math::world_to_screen(float3 vertex, ObjectTransform transform, float2 numPixels, Cam camera) {
     // Transform vertex to world space
     float3 vertex_world = transform.ToWorldPoint(vertex);
+    float3 vertex_view = camera.CamTransform.ToLocalPoint(vertex_world);
     
     // Convert FOV from degrees to radians
-    float fov_radians = fov * M_PI / 180.0f;
+    float fov_radians = degrees_to_radians(camera.Fov);
     
     // Perspective projection - simpler and more reliable approach
-    float z = vertex_world.z;
+    float z = vertex_view.z;
     if (z <= 0.01f) z = 0.01f; // Prevent division by zero and handle near clipping
     
     // Calculate projection scale
@@ -102,8 +112,8 @@ float3 Math::world_to_screen(float3 vertex, ObjectTransform transform, float2 nu
     float aspect_ratio = numPixels.x / numPixels.y;
     
     // Project to normalized device coordinates
-    float ndc_x = (vertex_world.x * scale) / (z * aspect_ratio);
-    float ndc_y = (vertex_world.y * scale) / z;
+    float ndc_x = (vertex_view.x * scale) / (z * aspect_ratio);
+    float ndc_y = (vertex_view.y * scale) / z;
     
     // Convert to screen coordinates (0,0 at top-left)
     float screen_x = (ndc_x + 1.0f) * 0.5f * numPixels.x;
@@ -115,3 +125,4 @@ float3 Math::world_to_screen(float3 vertex, ObjectTransform transform, float2 nu
 float Math::signed_triangle_area(float2 a, float2 b, float2 c){
     return 0.5f * ((b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y));
 }
+

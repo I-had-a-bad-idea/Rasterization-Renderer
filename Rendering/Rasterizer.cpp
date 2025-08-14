@@ -68,7 +68,7 @@ void Rasterizer::write_image_to_file(std::vector<float3>& image, int width, int 
     }
 }
 
-void Rasterizer::Render(Scene& scene, RenderTarget& target, float fov) {
+void Rasterizer::Render(Scene& scene, RenderTarget& target) {
     // Clear the color buffer first
     std::fill(target.color_buffer.begin(), target.color_buffer.end(), float3(0.0f, 0.0f, 0.0f)); // Black background
     // Reset depth buffer with large depth values
@@ -78,9 +78,9 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target, float fov) {
     std::vector<Object> models(scene.objects);
     for (const auto& model : models) {
         for (size_t i = 0; i + 2 < model.Points.size(); i += 3) {
-            float3 a = Math::world_to_screen(model.Points[i + 0], model.Obj_Transform, target.Size, fov);
-            float3 b = Math::world_to_screen(model.Points[i + 1], model.Obj_Transform, target.Size, fov);
-            float3 c = Math::world_to_screen(model.Points[i + 2], model.Obj_Transform, target.Size, fov);
+            float3 a = Math::world_to_screen(model.Points[i + 0], model.Obj_Transform, target.Size, scene.camera);
+            float3 b = Math::world_to_screen(model.Points[i + 1], model.Obj_Transform, target.Size, scene.camera);
+            float3 c = Math::world_to_screen(model.Points[i + 2], model.Obj_Transform, target.Size, scene.camera);
 
             // Skip triangles that are behind the camera
             if (a.z <= 0.1f || b.z <= 0.1f || c.z <= 0.1f) continue;
