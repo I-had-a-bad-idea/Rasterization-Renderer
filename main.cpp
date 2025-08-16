@@ -13,7 +13,6 @@
 
 
 
-
 void ToFlatByteArray(RenderTarget &renderTarget, std::vector<Color> &data) {
     data.resize(renderTarget.color_buffer.size());
 
@@ -26,7 +25,6 @@ void ToFlatByteArray(RenderTarget &renderTarget, std::vector<Color> &data) {
     }
 }
 
-//TODO make this use a "scene", which also has an update cycle, using this line:   scene.Update(target, GetFrameTime());
 void Run(RenderTarget& target, Scene& scene, float fov){
     // Create window
     InitWindow(target.Width, target.Height, "Rasterization-Renderer");
