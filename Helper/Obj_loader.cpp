@@ -23,7 +23,7 @@ Object ObjLoader::load_object(std::string path, float3 position, float3 rotation
         triangle_colors[i] = Math::random_color();
     }
 
-    TextureShader shader(MeshTexture::CreateFromBytes());
+    auto shader = std::make_shared<TextureShader>(TextureShader(MeshTexture::CreateFromBytes(ImageLoader::png_file_to_bytes("Test_Texture.png"))));
 
     ObjectMesh mesh(object_points, object_normals, texture_cords);
     return Object(mesh, shader, name, triangle_colors, position, rotation);

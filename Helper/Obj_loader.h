@@ -10,6 +10,7 @@
 #include "Object_mesh.h"
 #include "Maths.h"
 #include "Texture_shader.h"
+#include "Image_loader.h"
 
 class ObjLoader {
 public:

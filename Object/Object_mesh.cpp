@@ -16,10 +16,16 @@ float3 MeshTexture::Sample(float u, float v) const {
     float fu = u - std::floor(u);
     float fv = v - std::floor(v);
 
-    int x = static_cast<int>(fu * wscale);
-    int y = static_cast<int>(fv * hscale);
+    int x = static_cast<int>(fu * (Width - 1));
+    int y = static_cast<int>(fv * (Height - 1));
 
-    return image[y * Width + x]; // row-major indexing
+    // Clamp to valid range
+    if (x < 0) x = 0;
+    if (x >= Width) x = Width - 1;
+    if (y < 0) y = 0;
+    if (y >= Height) y = Height - 1;
+
+    return image[y * Width + x];
 }
 
 MeshTexture MeshTexture::CreateFromBytes(const std::vector<uint8_t>& bytes) {
