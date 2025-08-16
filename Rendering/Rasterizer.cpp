@@ -75,18 +75,19 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
     std::fill(target.depth_buffer.begin(), target.depth_buffer.end(), 1000.0f);
     
     // Loop over each object in the scene
-    std::vector<Object> models(scene.objects);
-    for (const auto& model : models) {
-        for (size_t i = 0; i + 2 < model.Points.size(); i += 3) {
-            float3 a = Math::world_to_screen(model.Points[i + 0], model.Obj_Transform, target.Size, scene.camera);
-            float3 b = Math::world_to_screen(model.Points[i + 1], model.Obj_Transform, target.Size, scene.camera);
-            float3 c = Math::world_to_screen(model.Points[i + 2], model.Obj_Transform, target.Size, scene.camera);
+    std::vector<Object> objects(scene.objects);
+    for (const auto& object : objects) {
+        ObjectMesh model = object.Mesh;
+        for (size_t i = 0; i + 2 < model.Vertices.size(); i += 3) {
+            float3 a = Math::world_to_screen(model.Vertices[i + 0], object.Obj_Transform, target.Size, scene.camera);
+            float3 b = Math::world_to_screen(model.Vertices[i + 1], object.Obj_Transform, target.Size, scene.camera);
+            float3 c = Math::world_to_screen(model.Vertices[i + 2], object.Obj_Transform, target.Size, scene.camera);
 
             // Skip triangles that are behind the camera
             if (a.z <= 0.1f || b.z <= 0.1f || c.z <= 0.1f) continue;
 
             // Ensure we have a valid triangle color index
-            int color_index = (i / 3) % model.Triangle_colors.size();
+            int color_index = (i / 3) % object.Triangle_colors.size();
 
             // Triangle bounds for scissor test
             float min_x = std::min({a.x, b.x, c.x});
@@ -116,7 +117,7 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
                         
                         // Depth test: render if this pixel is closer
                         if (depth < target.depth_buffer[y * target.Width + x]) {
-                            target.color_buffer[y * target.Width + x] = model.Triangle_colors[color_index];
+                            target.color_buffer[y * target.Width + x] = object.Triangle_colors[color_index];
                             target.depth_buffer[y * target.Width + x] = depth;
                         }
                     }
