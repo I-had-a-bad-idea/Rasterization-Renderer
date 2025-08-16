@@ -1,16 +1,16 @@
-
 #include "Obj_loader.h"
-
-
+#include <sstream>
+#include <iostream>
+#include <array>
 
 Object ObjLoader::load_object(std::string path, float3 position, float3 rotation, std::string name){
     std::string obj_path = std::filesystem::current_path().string() + path;
     std::string obj_string = StringHelper::readFileToString(obj_path);
-    std::tuple<std::vector<float3>, std::vector<float3>, std::vector<float2>> mesh_data = load_obj_file(obj_string);
+    auto mesh_data = load_obj_file(obj_string);
+
     std::vector<float3> object_points = std::get<0>(mesh_data);
     std::vector<float3> object_normals = std::get<1>(mesh_data);
-    std::vector<float2> texture_cords = std::get<2>(mesh_data);
-    
+    std::vector<float2> texture_coords = std::get<2>(mesh_data);
 
     if (object_points.empty()) {
        std::cerr << "Failed to load model or model is empty!" << std::endl;
@@ -19,24 +19,32 @@ Object ObjLoader::load_object(std::string path, float3 position, float3 rotation
 
     // Create random colors
     std::vector<float3> triangle_colors(object_points.size() / 3);
-    for(int i = 0; i < object_points.size() / 3; i++){
+    for (size_t i = 0; i < triangle_colors.size(); i++) {
         triangle_colors[i] = Math::random_color();
     }
 
-    auto shader = std::make_shared<TextureShader>(TextureShader(MeshTexture::CreateFromBytes(ImageLoader::png_file_to_bytes("Test_Texture.png"))));
+    // Load texture + shader
+    auto texture = std::make_shared<MeshTexture>(
+        MeshTexture::CreateFromBytes(ImageLoader::png_file_to_bytes("Test_Texture.png"))
+    );
+    auto shader = std::make_shared<TextureShader>(texture);
 
-    ObjectMesh mesh(object_points, object_normals, texture_cords);
+    ObjectMesh mesh(object_points, object_normals, texture_coords);
     return Object(mesh, shader, name, triangle_colors, position, rotation);
 }
 
 
-// not so efficient obj parser
+// Proper OBJ parser
+std::tuple<std::vector<float3>, std::vector<float3>, std::vector<float2>> 
+ObjLoader::load_obj_file(std::string objString) {
 
-std::tuple<std::vector<float3>, std::vector<float3>, std::vector<float2>> ObjLoader::load_obj_file(std::string objString) {
-    std::vector<float3> allPoints;
-    std::vector<float3> trianglePoints; // each set of 3 points is a triangle
-    std::vector<float3> normals;
-    std::vector<float2> texture_cords;
+    std::vector<float3> positions;
+    std::vector<float3> normals_all;
+    std::vector<float2> texcoords_all;
+
+    std::vector<float3> out_vertices;
+    std::vector<float3> out_normals;
+    std::vector<float2> out_texcoords;
 
     std::istringstream stream(objString);
     std::string line;
@@ -45,40 +53,41 @@ std::tuple<std::vector<float3>, std::vector<float3>, std::vector<float2>> ObjLoa
         if (line.rfind("v ", 0) == 0) { // vertex position
             auto parts = StringHelper::split(line.substr(2), ' ');
             if (parts.size() < 3) continue;
-
-            float x = std::stof(parts[0]);
-            float y = std::stof(parts[1]);
-            float z = std::stof(parts[2]);
-            allPoints.emplace_back(x, y, z);
+            positions.emplace_back(std::stof(parts[0]), std::stof(parts[1]), std::stof(parts[2]));
         }
-        else if(line.rfind("vt", 0) == 0){
+        else if (line.rfind("vt", 0) == 0) {
             auto parts = StringHelper::split(line.substr(3), ' ');
-            float x = std::stof(parts[0]);
-            float y = std::stof(parts[1]);
-            texture_cords.emplace_back(x, y);
+            if (parts.size() < 2) continue;
+            float u = std::stof(parts[0]);
+            float v = std::stof(parts[1]);
+            texcoords_all.emplace_back(u, 1.0f - v); // flip V
         }
-        else if(line.rfind("vn", 0) == 0){
+        else if (line.rfind("vn", 0) == 0) {
             auto parts = StringHelper::split(line.substr(3), ' ');
-            float x = std::stof(parts[0]);
-            float y = std::stof(parts[1]);
-            float z = std::stof(parts[2]);
-            normals.emplace_back(x, y, z);
+            if (parts.size() < 3) continue;
+            normals_all.emplace_back(std::stof(parts[0]), std::stof(parts[1]), std::stof(parts[2]));
         }
-        else if (line.rfind("f ", 0) == 0) { // face indices
+        else if (line.rfind("f ", 0) == 0) {
             auto faceIndexGroups = StringHelper::split(line.substr(2), ' ');
 
-            for (int i = 0; i < static_cast<int>(faceIndexGroups.size()); i++) {
-                auto indexGroupStr = StringHelper::split(faceIndexGroups[i], '/');
-                int pointIndex = std::stoi(indexGroupStr[0]) - 1;
+            // Triangulate (fan method)
+            for (int i = 1; i + 1 < (int)faceIndexGroups.size(); i++) {
+                std::array<std::string,3> tri = { faceIndexGroups[0], faceIndexGroups[i], faceIndexGroups[i+1] };
+                for (auto& vertStr : tri) {
+                    auto idx = StringHelper::split(vertStr, '/');
+                    int vi = (idx.size() > 0 && !idx[0].empty()) ? std::stoi(idx[0]) - 1 : -1;
+                    int ti = (idx.size() > 1 && !idx[1].empty()) ? std::stoi(idx[1]) - 1 : -1;
+                    int ni = (idx.size() > 2 && !idx[2].empty()) ? std::stoi(idx[2]) - 1 : -1;
 
-                if (i >= 3) // n-gon triangle fan handling
-                    trianglePoints.push_back(trianglePoints[trianglePoints.size() - (3 * i - 6)]);
-                if (i >= 3)
-                    trianglePoints.push_back(trianglePoints[trianglePoints.size() - 2]);
-
-                trianglePoints.push_back(allPoints[pointIndex]);
+                    if (vi >= 0) out_vertices.push_back(positions[vi]);
+                    if (ti >= 0) out_texcoords.push_back(texcoords_all[ti]);
+                    else out_texcoords.emplace_back(0,0);
+                    if (ni >= 0) out_normals.push_back(normals_all[ni]);
+                    else out_normals.emplace_back(0,0,1);
+                }
             }
         }
     }
-    return std::make_tuple(trianglePoints, normals, texture_cords);
+
+    return std::make_tuple(out_vertices, out_normals, out_texcoords);
 }

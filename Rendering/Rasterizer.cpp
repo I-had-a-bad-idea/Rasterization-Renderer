@@ -117,10 +117,36 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
                         
                         // Depth test: render if this pixel is closer
                         if (depth < target.depth_buffer[y * target.Width + x]) {
-                            float2 text_coord(0, 0);
-                            text_coord += model.Texture_cords[i + 0] * weights.x;
-                            text_coord += model.Texture_cords[i + 1] * weights.y;
-                            text_coord += model.Texture_cords[i + 2] * weights.z;
+                            // Perspective-correct interpolation
+                            float u0 = model.Texture_cords[i+0].x;
+                            float v0 = model.Texture_cords[i+0].y;
+                            float u1 = model.Texture_cords[i+1].x;
+                            float v1 = model.Texture_cords[i+1].y;
+                            float u2 = model.Texture_cords[i+2].x;
+                            float v2 = model.Texture_cords[i+2].y;
+
+                            // Pre-divide by depth
+                            float u0z = u0 / a.z;
+                            float v0z = v0 / a.z;
+                            float u1z = u1 / b.z;
+                            float v1z = v1 / b.z;
+                            float u2z = u2 / c.z;
+                            float v2z = v2 / c.z;
+
+                            float w0 = 1.0f / a.z;
+                            float w1 = 1.0f / b.z;
+                            float w2 = 1.0f / c.z;
+
+                            // Interpolate
+                            float u = u0z * weights.x + u1z * weights.y + u2z * weights.z;
+                            float v = v0z * weights.x + v1z * weights.y + v2z * weights.z;
+                            float w = w0  * weights.x + w1  * weights.y + w2  * weights.z;
+
+                            // Undo division
+                            u /= w;
+                            v /= w;
+
+                            float2 text_coord(u, v);
 
                             target.color_buffer[y * target.Width + x] = object.Object_Shader->PixelColor(text_coord);
                             target.depth_buffer[y * target.Width + x] = depth;
