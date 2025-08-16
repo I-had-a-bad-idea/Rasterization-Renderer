@@ -3,13 +3,14 @@
 
 
 
-Object ObjLoader::load_object(std::string path, float3 position, float3 rotation, std::string name, std::shared_ptr<ObjectShader> shader){
+Object ObjLoader::load_object(std::string path, float3 position, float3 rotation, std::string name){
     std::string obj_path = std::filesystem::current_path().string() + path;
     std::string obj_string = StringHelper::readFileToString(obj_path);
     std::tuple<std::vector<float3>, std::vector<float3>, std::vector<float2>> mesh_data = load_obj_file(obj_string);
     std::vector<float3> object_points = std::get<0>(mesh_data);
     std::vector<float3> object_normals = std::get<1>(mesh_data);
     std::vector<float2> texture_cords = std::get<2>(mesh_data);
+    
 
     if (object_points.empty()) {
        std::cerr << "Failed to load model or model is empty!" << std::endl;
@@ -21,6 +22,9 @@ Object ObjLoader::load_object(std::string path, float3 position, float3 rotation
     for(int i = 0; i < object_points.size() / 3; i++){
         triangle_colors[i] = Math::random_color();
     }
+
+    TextureShader shader(MeshTexture::CreateFromBytes());
+
     ObjectMesh mesh(object_points, object_normals, texture_cords);
     return Object(mesh, shader, name, triangle_colors, position, rotation);
 }
