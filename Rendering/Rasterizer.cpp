@@ -117,7 +117,12 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
                         
                         // Depth test: render if this pixel is closer
                         if (depth < target.depth_buffer[y * target.Width + x]) {
-                            target.color_buffer[y * target.Width + x] = object.Triangle_colors[color_index];
+                            float2 text_coord(0, 0);
+                            text_coord += model.Texture_cords[i + 0] * weights.x;
+                            text_coord += model.Texture_cords[i + 1] * weights.y;
+                            text_coord += model.Texture_cords[i + 2] * weights.z;
+
+                            target.color_buffer[y * target.Width + x] = object.Object_Shader->PixelColor(text_coord);
                             target.depth_buffer[y * target.Width + x] = depth;
                         }
                     }

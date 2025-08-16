@@ -3,7 +3,7 @@
 
 
 
-Object ObjLoader::load_object(std::string path, float3 position, float3 rotation, std::string name){
+Object ObjLoader::load_object(std::string path, float3 position, float3 rotation, std::string name, std::shared_ptr<ObjectShader> shader){
     std::string obj_path = std::filesystem::current_path().string() + path;
     std::string obj_string = StringHelper::readFileToString(obj_path);
     std::tuple<std::vector<float3>, std::vector<float3>, std::vector<float2>> mesh_data = load_obj_file(obj_string);
@@ -22,7 +22,7 @@ Object ObjLoader::load_object(std::string path, float3 position, float3 rotation
         triangle_colors[i] = Math::random_color();
     }
     ObjectMesh mesh(object_points, object_normals, texture_cords);
-    return Object(mesh, name, triangle_colors, position, rotation);
+    return Object(mesh, shader, name, triangle_colors, position, rotation);
 }
 
 

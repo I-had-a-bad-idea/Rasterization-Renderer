@@ -10,6 +10,17 @@ public:
 
     float2(float x = 0.0f, float y = 0.0f);
     float length();
+
+
+    float2 operator+(const float2& other) const;
+    float2 operator-(const float2& other) const;
+    float2 operator*(float scalar) const;
+    float2 operator/(float scalar) const;
+
+    float2& operator+=(const float2& other);
+    float2& operator-=(const float2& other);
+    float2& operator*=(float scalar);
+    float2& operator/=(float scalar);
 };
 
 class float3 {

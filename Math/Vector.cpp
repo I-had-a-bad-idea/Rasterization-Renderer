@@ -6,6 +6,42 @@ float float2::length() {
     return std::sqrt(x * x + y * y);
 }
 
+float2 float2::operator+(const float2& other) const {
+    return float2(x + other.x, y + other.y);
+}
+
+float2 float2::operator-(const float2& other) const {
+    return float2(x - other.x, y - other.y);
+}
+
+float2 float2::operator*(float scalar) const {
+    return float2(x * scalar, y * scalar);
+}
+
+float2 float2::operator/(float scalar) const {
+    return float2(x / scalar, y / scalar);
+}
+
+float2& float2::operator+=(const float2& other) {
+    x += other.x; y += other.y;
+    return *this;
+}
+
+float2& float2::operator-=(const float2& other) {
+    x -= other.x; y -= other.y;
+    return *this;
+}
+
+float2& float2::operator*=(float scalar) {
+    x *= scalar; y *= scalar;
+    return *this;
+}
+
+float2& float2::operator/=(float scalar) {
+    x /= scalar; y /= scalar;
+    return *this;
+}
+
 float3::float3(float x, float y, float z) : x(x), y(y), z(z) {}
 
 float float3::r() { return x; }
