@@ -2,8 +2,8 @@
 #include <cmath>
 
 
-ObjectTransform::ObjectTransform() : Position(float3(0, 0, 0)), Yaw(0.0f), Pitch(0.0f) {} 
-ObjectTransform::ObjectTransform(float3 position, float yaw, float pitch) : Position(position), Yaw(yaw), Pitch(pitch) {}
+ObjectTransform::ObjectTransform() : Position(float3(0, 0, 0)), Rotation(float3(0, 0, 0)) {} 
+ObjectTransform::ObjectTransform(float3 position, float3 rotation) : Position(position), Rotation(rotation) {}
 
 float3 ObjectTransform::ToWorldPoint(float3 p)
 {
@@ -20,18 +20,26 @@ float3 ObjectTransform::ToLocalPoint(float3 world_point) {
 // Calculate right/up/forward vectors (i, j, k)
 std::tuple<float3, float3, float3> ObjectTransform::GetBasisVectors()
 {
-    float3 ihat_yaw(std::cos(Yaw), 0, std::sin(Yaw));
+    float3 ihat_yaw(std::cos(Rotation.y), 0, std::sin(Rotation.y));
     float3 jhat_yaw(0, 1, 0);
-    float3 khat_yaw(-std::sin(Yaw), 0, std::cos(Yaw));
+    float3 khat_yaw(-std::sin(Rotation.y), 0, std::cos(Rotation.y));
 
     float3 ihat_pitch(1, 0, 0);
-    float3 jhat_pitch(0, std::cos(Pitch), -std::sin(Pitch));
-    float3 khat_pitch(0, std::sin(Pitch), std::cos(Pitch));
+    float3 jhat_pitch(0, std::cos(Rotation.x), -std::sin(Rotation.x));
+    float3 khat_pitch(0, std::sin(Rotation.x), std::cos(Rotation.x));
 
-    float3 ihat(TransformVector(ihat_yaw, jhat_yaw, khat_yaw, ihat_pitch));
-    float3 jhat(TransformVector(ihat_yaw, jhat_yaw, khat_yaw, jhat_pitch));
-    float3 khat(TransformVector(ihat_yaw, jhat_yaw, khat_yaw, khat_pitch));
+    float3 ihat_roll(std::cos(Rotation.z), std::sin(Rotation.z), 0);
+    float3 jhat_roll(-std::sin(Rotation.z), std::cos(Rotation.z), 0);
+    float3 khat_roll(0, 0, 1);
 
+    // ---- Yaw and Pitch combined ----
+    float3 ihat_pitchYaw = TransformVector(ihat_yaw, jhat_yaw, khat_yaw, ihat_pitch);
+    float3 jhat_pitchYaw = TransformVector(ihat_yaw, jhat_yaw, khat_yaw, jhat_pitch);
+    float3 khat_pitchYaw = TransformVector(ihat_yaw, jhat_yaw, khat_yaw, khat_pitch);
+    // Combine roll
+    float3 ihat = TransformVector(ihat_pitchYaw, jhat_pitchYaw, khat_pitchYaw, ihat_roll);
+    float3 jhat = TransformVector(ihat_pitchYaw, jhat_pitchYaw, khat_pitchYaw, jhat_roll);
+    float3 khat = TransformVector(ihat_pitchYaw, jhat_pitchYaw, khat_pitchYaw, khat_roll);
     return std::make_tuple(ihat, jhat, khat);
 }
 

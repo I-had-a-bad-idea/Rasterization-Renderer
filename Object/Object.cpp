@@ -6,6 +6,5 @@ Object::Object(ObjectMesh mesh, std::shared_ptr<ObjectShader> shader, std::strin
     Triangle_colors = triangle_colors;
     Name = name;
     Obj_Transform.Position = position;
-    Obj_Transform.Pitch = rotation.x;
-    Obj_Transform.Yaw = rotation.y;
+    Obj_Transform.Rotation = rotation;
 }

@@ -6,12 +6,11 @@
 
 class ObjectTransform{
     public:
-        float Yaw; // Rotation around y axis
-        float Pitch;
+        float3 Rotation;
         float3 Position;
 
         ObjectTransform();                 
-        ObjectTransform(float3 position, float yaw, float pitch);         
+        ObjectTransform(float3 position, float3 rotation);         
 
         // Transform a point from local space to world space
         float3 ToWorldPoint(float3 p);

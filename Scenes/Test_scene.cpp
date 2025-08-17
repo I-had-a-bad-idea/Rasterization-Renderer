@@ -24,8 +24,8 @@ void TestScene::Update(RenderTarget& target, float delta_time) {
         HideCursor();
         Vector2 raylib_mouse_delta = GetMouseDelta();
         float2 mouse_delta(raylib_mouse_delta.x / target.Width * mouse_sensitivity, raylib_mouse_delta.y / target.Width * mouse_sensitivity);
-        camera_transform.Pitch = std::clamp(camera_transform.Pitch - mouse_delta.y, Math::degrees_to_radians(-85), Math::degrees_to_radians(85));
-        camera_transform.Yaw -= mouse_delta.x;
+        camera_transform.Rotation.x = std::clamp(camera_transform.Rotation.x - mouse_delta.y, Math::degrees_to_radians(-85), Math::degrees_to_radians(85));
+        camera_transform.Rotation.y -= mouse_delta.x;
     }
     
     
