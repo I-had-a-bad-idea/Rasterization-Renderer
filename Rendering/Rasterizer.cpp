@@ -86,6 +86,13 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
             // Skip triangles that are behind the camera
             if (a.z <= 0.1f || b.z <= 0.1f || c.z <= 0.1f) continue;
 
+            // **Backface culling** - calculate avarage normal of the triangle
+            float3 normal = (a + b + c) / 3;
+            float3 cameraToTriangle = float3(a.x - scene.camera.CamTransform.Position.x, a.y - scene.camera.CamTransform.Position.y, a.z - scene.camera.CamTransform.Position.z);
+            
+            // If the normal is facing away from the camera , cull the triangle
+            if (Math::dot(normal, cameraToTriangle) < 0) continue;
+
             // Ensure we have a valid triangle color index
             int color_index = (i / 3) % object.Triangle_colors.size();
 
@@ -116,43 +123,45 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
                         float depth = a.z * weights.x + b.z * weights.y + c.z * weights.z;
                         
                         // Depth test: render if this pixel is closer
-                        if (depth < target.depth_buffer[y * target.Width + x]) {
-                            // Perspective-correct interpolation
-                            float u0 = model.Texture_cords[i+0].x;
-                            float v0 = model.Texture_cords[i+0].y;
-                            float u1 = model.Texture_cords[i+1].x;
-                            float v1 = model.Texture_cords[i+1].y;
-                            float u2 = model.Texture_cords[i+2].x;
-                            float v2 = model.Texture_cords[i+2].y;
+                        if (depth > target.depth_buffer[y * target.Width + x]) {
+                            continue;  // Skip pixel as it is farther away
+                            }
+                        // Perspective-correct interpolation
+                        float u0 = model.Texture_cords[i+0].x;
+                        float v0 = model.Texture_cords[i+0].y;
+                        float u1 = model.Texture_cords[i+1].x;
+                        float v1 = model.Texture_cords[i+1].y;
+                        float u2 = model.Texture_cords[i+2].x;
+                        float v2 = model.Texture_cords[i+2].y;
 
-                            // Pre-divide by depth
-                            float u0z = u0 / a.z;
-                            float v0z = v0 / a.z;
-                            float u1z = u1 / b.z;
-                            float v1z = v1 / b.z;
-                            float u2z = u2 / c.z;
-                            float v2z = v2 / c.z;
+                        // Pre-divide by depth
+                        float u0z = u0 / a.z;
+                        float v0z = v0 / a.z;
+                        float u1z = u1 / b.z;
+                        float v1z = v1 / b.z;
+                        float u2z = u2 / c.z;
+                        float v2z = v2 / c.z;
 
-                            float w0 = 1.0f / a.z;
-                            float w1 = 1.0f / b.z;
-                            float w2 = 1.0f / c.z;
+                        float w0 = 1.0f / a.z;
+                        float w1 = 1.0f / b.z;
+                        float w2 = 1.0f / c.z;
 
-                            // Interpolate
-                            float u = u0z * weights.x + u1z * weights.y + u2z * weights.z;
-                            float v = v0z * weights.x + v1z * weights.y + v2z * weights.z;
-                            float w = w0  * weights.x + w1  * weights.y + w2  * weights.z;
+                        // Interpolate
+                        float u = u0z * weights.x + u1z * weights.y + u2z * weights.z;
+                        float v = v0z * weights.x + v1z * weights.y + v2z * weights.z;
+                        float w = w0  * weights.x + w1  * weights.y + w2  * weights.z;
 
-                            // Undo division
-                            u /= w;
-                            v /= w;
+                        // Undo division
+                        u /= w;
+                        v /= w;
 
-                            float2 text_coord(u, v);
-                            float3 normal = model.Normals[i + 0] * weights.x + model.Normals[i + 1] * weights.y + model.Normals[i + 2] * weights.z;
-                            normal = float3::Normalize(normal);
+                        float2 text_coord(u, v);
+                        float3 normal = model.Normals[i + 0] * weights.x + model.Normals[i + 1] * weights.y + model.Normals[i + 2] * weights.z;
+                        normal = float3::Normalize(normal);
 
-                            target.color_buffer[y * target.Width + x] = object.Object_Shader->PixelColor(text_coord, normal);
-                            target.depth_buffer[y * target.Width + x] = depth;
-                        }
+                        target.color_buffer[y * target.Width + x] = object.Object_Shader->PixelColor(text_coord, normal);
+                        target.depth_buffer[y * target.Width + x] = depth;
+                        
                     }
                 }
             }
