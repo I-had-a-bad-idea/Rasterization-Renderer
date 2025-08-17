@@ -126,3 +126,6 @@ float Math::signed_triangle_area(float2 a, float2 b, float2 c){
     return 0.5f * ((b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y));
 }
 
+float Math::lerp(float a, float b, float c){
+    return a + (b - a) * std::clamp(c, 0.0f, 1.0f);
+}

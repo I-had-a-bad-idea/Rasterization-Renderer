@@ -35,7 +35,7 @@ public:
 class ObjectShader {
 public:
     virtual ~ObjectShader() = default;
-    virtual float3 PixelColor(float2 tex_coord) const = 0;
+    virtual float3 PixelColor(float2 tex_coord, float3 normal) const = 0;
 };
 
 #endif

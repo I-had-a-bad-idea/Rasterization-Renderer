@@ -27,7 +27,7 @@ Object ObjLoader::load_object(std::string path, float3 position, float3 rotation
     auto texture = std::make_shared<MeshTexture>(
         MeshTexture::CreateFromBytes(ImageLoader::png_file_to_bytes("Test_Texture.png"))
     );
-    auto shader = std::make_shared<TextureShader>(texture);
+    auto shader = std::make_shared<LitTextureShader>(texture, float3(0, 1, 0));
 
     ObjectMesh mesh(object_points, object_normals, texture_coords);
     return Object(mesh, shader, name, triangle_colors, position, rotation);

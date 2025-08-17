@@ -9,7 +9,7 @@
 #include <filesystem>
 #include "Object_mesh.h"
 #include "Maths.h"
-#include "Texture_shader.h"
+#include "Shaders.h"
 #include "Image_loader.h"
 
 class ObjLoader {

@@ -22,6 +22,7 @@ public:
     static float signed_triangle_area(float2 a, float2 b, float2 c);
     static float degrees_to_radians(float degrees);
     static float radians_to_degrees(float radians);
+    static float lerp(float a, float b, float c);
 };
 
 #endif

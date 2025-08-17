@@ -147,8 +147,10 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
                             v /= w;
 
                             float2 text_coord(u, v);
+                            float3 normal = model.Normals[i + 0] * weights.x + model.Normals[i + 1] * weights.y + model.Normals[i + 2] * weights.z;
+                            normal = float3::Normalize(normal);
 
-                            target.color_buffer[y * target.Width + x] = object.Object_Shader->PixelColor(text_coord);
+                            target.color_buffer[y * target.Width + x] = object.Object_Shader->PixelColor(text_coord, normal);
                             target.depth_buffer[y * target.Width + x] = depth;
                         }
                     }
