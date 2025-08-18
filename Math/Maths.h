@@ -24,6 +24,7 @@ public:
     static float degrees_to_radians(float degrees);
     static float radians_to_degrees(float radians);
     static float lerp(float a, float b, float c);
+    static float edge_function(const float2& a, const float2& b, const float2& p);
 };
 
 #endif
