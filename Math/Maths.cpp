@@ -1,8 +1,4 @@
-#include <algorithm>
-#include <cmath>
 #include "Maths.h"
-#include "Vector.h"
-#include "ObjectTransform.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846

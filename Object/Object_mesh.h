@@ -5,15 +5,20 @@
 #include <vector>
 #include <cstdint>
 #include <stdexcept>
+#include "Camera.h"
+#include "Maths.h"
 
 class ObjectMesh{
     public:
         std::vector<float3> Vertices;
+        std::vector<float3> screen_vertices;
         std::vector<float3> Normals;
         std::vector<float2> Texture_cords;
 
         ObjectMesh() = default;
         ObjectMesh(std::vector<float3> vertices, std::vector<float3> normals, std::vector<float2> texture_cords);
+
+        void process_model(ObjectTransform Obj_Transform, float2 target_size, Cam camera);
 };
 
 class MeshTexture {

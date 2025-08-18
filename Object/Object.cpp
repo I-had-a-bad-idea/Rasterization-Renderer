@@ -8,3 +8,7 @@ Object::Object(ObjectMesh mesh, std::shared_ptr<ObjectShader> shader, std::strin
     Obj_Transform.Position = position;
     Obj_Transform.Rotation = rotation;
 }
+
+void Object::process_object(float2 target_size, Cam camera){
+    Mesh.process_model(Obj_Transform, target_size, camera);
+}

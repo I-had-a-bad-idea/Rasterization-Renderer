@@ -1,8 +1,7 @@
-#ifndef Cam_H
-#define Cam_H
+#ifndef CAM_H
+#define CAM_H
 
 #include "ObjectTransform.h"
-#include "Maths.h"
 
 class Cam{
     public:

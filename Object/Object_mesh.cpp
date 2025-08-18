@@ -55,6 +55,12 @@ MeshTexture MeshTexture::CreateFromBytes(const std::vector<uint8_t>& bytes) {
     return MeshTexture(img, width, height);
 }
 
+void ObjectMesh::process_model(ObjectTransform Obj_Transform, float2 target_size, Cam camera){
+    screen_vertices.resize(Vertices.size());
+    for(int i = 0; i < Vertices.size(); i++){
+        screen_vertices[i] = (Math::world_to_screen(Vertices[i], Obj_Transform, target_size, camera));
+    }
+}
 
 ObjectMesh::ObjectMesh(std::vector<float3> vertices, std::vector<float3> normals, std::vector<float2> texture_cords){
     Vertices = vertices;

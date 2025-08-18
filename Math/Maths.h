@@ -1,10 +1,11 @@
 #ifndef MATH_H
 #define MATH_H
 
-#include "Vector.h"
 #include "Camera.h"
+#include "Vector.h"
 #include "ObjectTransform.h"
 #include <numbers>
+#include <algorithm>
 #include <cmath>
 
 

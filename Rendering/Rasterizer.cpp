@@ -8,13 +8,13 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
     std::fill(target.depth_buffer.begin(), target.depth_buffer.end(), 1000.0f);
     
     // Loop over each object in the scene
-    for (const auto& object : scene.objects) {
-        ObjectMesh model = object.Mesh;
+    for (Object& object : scene.objects) {
+        ObjectMesh& model = object.Mesh;
+        object.process_object(target.Size, scene.camera);
         for (size_t i = 0; i + 2 < model.Vertices.size(); i += 3) {
-            float3 a = Math::world_to_screen(model.Vertices[i + 0], object.Obj_Transform, target.Size, scene.camera);
-            float3 b = Math::world_to_screen(model.Vertices[i + 1], object.Obj_Transform, target.Size, scene.camera);
-            float3 c = Math::world_to_screen(model.Vertices[i + 2], object.Obj_Transform, target.Size, scene.camera);
-            //TODO when vertices are reused this worsens performance. Instead calculate the screenn position once for each vertex
+            float3 a = model.screen_vertices[i + 0];
+            float3 b = model.screen_vertices[i + 1];
+            float3 c = model.screen_vertices[i + 2];
 
             // Skip triangles that are behind the camera
             if (a.z <= 0.01f || b.z <= 0.01f || c.z <= 0.01f) continue;
