@@ -71,5 +71,3 @@ int main() {
     
     return 0;
 }
-
-//lu6kqpec05@jkotypc.com

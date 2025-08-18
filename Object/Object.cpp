@@ -6,7 +6,7 @@ Object::Object(ObjectMesh mesh, std::shared_ptr<ObjectShader> shader, std::strin
     Triangle_colors = triangle_colors;
     Name = name;
     Obj_Transform.Position = position;
-    Obj_Transform.Rotation = rotation;
+    Obj_Transform.SetRotation(rotation);
 }
 
 void Object::process_object(float2 target_size, Cam camera){

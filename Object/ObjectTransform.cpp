@@ -1,24 +1,33 @@
 #include "ObjectTransform.h"
 #include <cmath>
 
-
-ObjectTransform::ObjectTransform() : Position(float3(0, 0, 0)), Rotation(float3(0, 0, 0)) {} 
-ObjectTransform::ObjectTransform(float3 position, float3 rotation) : Position(position), Rotation(rotation) {}
-
-float3 ObjectTransform::ToWorldPoint(float3 p)
+ObjectTransform::ObjectTransform() 
+    : Position(float3(0, 0, 0)), Rotation(float3(0, 0, 0)) 
 {
-    auto [ihat, jhat, khat] = GetBasisVectors();
+    UpdateBasisVectors();
+} 
+
+ObjectTransform::ObjectTransform(float3 position, float3 rotation) 
+    : Position(position), Rotation(rotation) 
+{
+    UpdateBasisVectors();
+} 
+
+void ObjectTransform::SetRotation(const float3& rot) {
+    Rotation = rot;
+    UpdateBasisVectors();
+}
+
+float3 ObjectTransform::ToWorldPoint(float3 p) const {
     return TransformVector(ihat, jhat, khat, p) + Position;
 }
 
-float3 ObjectTransform::ToLocalPoint(float3 world_point) {
-    auto [ihat, jhat, khat] = GetInverseBasisVectors();
+float3 ObjectTransform::ToLocalPoint(float3 world_point) const {
     float3 relative = world_point - Position;
-    return TransformVector(ihat, jhat, khat, relative);
+    return TransformVector(ihat_inv, jhat_inv, khat_inv, relative);
 }
 
-// Calculate right/up/forward vectors (i, j, k)
-std::tuple<float3, float3, float3> ObjectTransform::GetBasisVectors()
+void ObjectTransform::UpdateBasisVectors()
 {
     float3 ihat_yaw(std::cos(Rotation.y), 0, std::sin(Rotation.y));
     float3 jhat_yaw(0, 1, 0);
@@ -36,24 +45,18 @@ std::tuple<float3, float3, float3> ObjectTransform::GetBasisVectors()
     float3 ihat_pitchYaw = TransformVector(ihat_yaw, jhat_yaw, khat_yaw, ihat_pitch);
     float3 jhat_pitchYaw = TransformVector(ihat_yaw, jhat_yaw, khat_yaw, jhat_pitch);
     float3 khat_pitchYaw = TransformVector(ihat_yaw, jhat_yaw, khat_yaw, khat_pitch);
+
     // Combine roll
-    float3 ihat = TransformVector(ihat_pitchYaw, jhat_pitchYaw, khat_pitchYaw, ihat_roll);
-    float3 jhat = TransformVector(ihat_pitchYaw, jhat_pitchYaw, khat_pitchYaw, jhat_roll);
-    float3 khat = TransformVector(ihat_pitchYaw, jhat_pitchYaw, khat_pitchYaw, khat_roll);
-    return std::make_tuple(ihat, jhat, khat);
+    ihat = TransformVector(ihat_pitchYaw, jhat_pitchYaw, khat_pitchYaw, ihat_roll);
+    jhat = TransformVector(ihat_pitchYaw, jhat_pitchYaw, khat_pitchYaw, jhat_roll);
+    khat = TransformVector(ihat_pitchYaw, jhat_pitchYaw, khat_pitchYaw, khat_roll);
+
+    // Precompute inverse basis
+    ihat_inv = float3(ihat.x, jhat.x, khat.x);
+    jhat_inv = float3(ihat.y, jhat.y, khat.y);
+    khat_inv = float3(ihat.z, jhat.z, khat.z);
 }
 
-std::tuple<float3, float3, float3> ObjectTransform::GetInverseBasisVectors(){
-    auto[ihat_, jhat_, khat_] = GetBasisVectors();
-    float3 ihat(ihat_.x, jhat_.x, khat_.x);
-    float3 jhat(ihat_.y, jhat_.y, khat_.y);
-    float3 khat(ihat_.z, jhat_.z, khat_.z);
-
-
-    return std::make_tuple(ihat, jhat, khat);
-}
-
-// Move each coordinate of given vector along the corresponding basis vector
 float3 ObjectTransform::TransformVector(float3 ihat, float3 jhat, float3 khat, float3 v)
 {
     return float3(

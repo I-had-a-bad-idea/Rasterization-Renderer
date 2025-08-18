@@ -12,35 +12,40 @@ void TestScene::Setup(){
 
 
 void TestScene::Update(RenderTarget& target, float delta_time) {
-    // for (auto& obj : objects) {
-    //     obj.Obj_Transform.Pitch += 3 * delta_time; 
-    // }
-    
     const float mouse_sensitivity = 2;
 
-    
     ObjectTransform& camera_transform(camera.CamTransform);
-    if(IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)){
+
+    if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)) {
         HideCursor();
         Vector2 raylib_mouse_delta = GetMouseDelta();
-        float2 mouse_delta(raylib_mouse_delta.x / target.Width * mouse_sensitivity, raylib_mouse_delta.y / target.Width * mouse_sensitivity);
-        camera_transform.Rotation.x = std::clamp(camera_transform.Rotation.x - mouse_delta.y, Math::degrees_to_radians(-85), Math::degrees_to_radians(85));
-        camera_transform.Rotation.y -= mouse_delta.x;
+        float2 mouse_delta(
+            raylib_mouse_delta.x / target.Width * mouse_sensitivity,
+            raylib_mouse_delta.y / target.Width * mouse_sensitivity
+        );
+
+        // Get current rotation
+        float3 rot = camera_transform.GetRotation();
+
+        // Apply mouse movement
+        rot.x = std::clamp(rot.x - mouse_delta.y,
+                           Math::degrees_to_radians(-85),
+                           Math::degrees_to_radians(85));
+        rot.y -= mouse_delta.x;
+
+        // Update (this recalculates basis vectors)
+        camera_transform.SetRotation(rot);
     }
-    
-    
-    
-    
 
     const float camera_speed = 5;
-    
+
     float3 move_delta(0, 0, 0);
     auto [cam_right, cam_up, cam_forward] = camera_transform.GetBasisVectors();
-    if(IsKeyDown(KEY_W)) move_delta += cam_forward;
-    if(IsKeyDown(KEY_S)) move_delta -= cam_forward;
-    if(IsKeyDown(KEY_A)) move_delta -= cam_right;
-    if(IsKeyDown(KEY_D)) move_delta += cam_right;
+    if (IsKeyDown(KEY_W)) move_delta += cam_forward;
+    if (IsKeyDown(KEY_S)) move_delta -= cam_forward;
+    if (IsKeyDown(KEY_A)) move_delta -= cam_right;
+    if (IsKeyDown(KEY_D)) move_delta += cam_right;
 
-    camera_transform.Position += float3(move_delta) * camera_speed * delta_time;
-   // camera_transform.Position.y = 1;
+    camera_transform.SetPosition(camera_transform.GetPosition() + move_delta * camera_speed * delta_time);
+    // camera_transform.SetPosition(float3(camera_transform.GetPosition().x, 1, camera_transform.GetPosition().z)); // optional fixed Y
 }
