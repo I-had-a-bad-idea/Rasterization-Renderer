@@ -1,72 +1,5 @@
 #include "Rasterizer.h"
 
-void Rasterizer::write_image_to_file(std::vector<float3>& image, int width, int height, const std::string& name) {
-    if (width <= 0 || height <= 0) {
-        throw std::invalid_argument("Invalid image dimensions");
-    }
-
-    if (image.size() != static_cast<size_t>(width * height)) {
-        throw std::invalid_argument("Image buffer size doesn't match dimensions");
-    }
-    std::ofstream writer(name + ".bmp", std::ios::binary);
-    if (!writer) {
-        throw std::runtime_error("Failed to create output file");
-    }
-
-    uint32_t fileSize = 14 + 40 + (width * height * 4);
-    uint32_t dataOffset = 14 + 40;
-    uint32_t dibHeaderSize = 40;
-    uint16_t planes = 1;
-    uint16_t bitsPerPixel = 8 * 4;
-    uint32_t compression = 0;
-    uint32_t dataSize = width * height * 4;
-
-    // --- BMP Header ---
-    writer.write("BM", 2);
-    writer.write(reinterpret_cast<char*>(&fileSize), 4);
-    uint32_t reserved = 0;
-    writer.write(reinterpret_cast<char*>(&reserved), 4);
-    writer.write(reinterpret_cast<char*>(&dataOffset), 4);
-
-    // --- DIB Header ---
-    writer.write(reinterpret_cast<char*>(&dibHeaderSize), 4);
-    writer.write(reinterpret_cast<char*>(&width), 4);
-    writer.write(reinterpret_cast<char*>(&height), 4);
-    writer.write(reinterpret_cast<char*>(&planes), 2);
-    writer.write(reinterpret_cast<char*>(&bitsPerPixel), 2);
-    writer.write(reinterpret_cast<char*>(&compression), 4);
-    writer.write(reinterpret_cast<char*>(&dataSize), 4);
-    uint32_t printRes = 2835; // 72 DPI
-    writer.write(reinterpret_cast<char*>(&printRes), 4);
-    writer.write(reinterpret_cast<char*>(&printRes), 4);
-    uint32_t paletteColors = 0;
-    writer.write(reinterpret_cast<char*>(&paletteColors), 4);
-    uint32_t importantColors = 0;
-    writer.write(reinterpret_cast<char*>(&importantColors), 4);
-
-    // --- Pixel Data (BMP stores bottom-to-top) ---
-    for (int y = height - 1; y >= 0; y--) {
-        for (int x = 0; x < width; x++) {
-            float3 col = image[y * width + x];
-            uint8_t r = static_cast<uint8_t>(std::clamp(col.r() * 255.0f, 0.0f, 255.0f));
-            uint8_t g = static_cast<uint8_t>(std::clamp(col.g() * 255.0f, 0.0f, 255.0f));
-            uint8_t b = static_cast<uint8_t>(std::clamp(col.b() * 255.0f, 0.0f, 255.0f));
-            uint8_t padding = 0;
-            
-            if (!writer.write(reinterpret_cast<char*>(&b), 1) ||
-                !writer.write(reinterpret_cast<char*>(&g), 1) ||
-                !writer.write(reinterpret_cast<char*>(&r), 1) ||
-                !writer.write(reinterpret_cast<char*>(&padding), 1)) {
-                throw std::runtime_error("Failed to write pixel data");
-            }    
-        }
-    }
-
-    writer.close();
-    if (writer.fail()) {
-        throw std::runtime_error("Failed to properly close the file");
-    }
-}
 
 void Rasterizer::Render(Scene& scene, RenderTarget& target) {
     // Clear the color buffer first
@@ -75,16 +8,16 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
     std::fill(target.depth_buffer.begin(), target.depth_buffer.end(), 1000.0f);
     
     // Loop over each object in the scene
-    std::vector<Object> objects(scene.objects);
-    for (const auto& object : objects) {
+    for (const auto& object : scene.objects) {
         ObjectMesh model = object.Mesh;
         for (size_t i = 0; i + 2 < model.Vertices.size(); i += 3) {
             float3 a = Math::world_to_screen(model.Vertices[i + 0], object.Obj_Transform, target.Size, scene.camera);
             float3 b = Math::world_to_screen(model.Vertices[i + 1], object.Obj_Transform, target.Size, scene.camera);
             float3 c = Math::world_to_screen(model.Vertices[i + 2], object.Obj_Transform, target.Size, scene.camera);
+            //TODO when vertices are reused this worsens performance. Instead calculate the screenn position once for each vertex
 
             // Skip triangles that are behind the camera
-            if (a.z <= 0.1f || b.z <= 0.1f || c.z <= 0.1f) continue;
+            if (a.z <= 0.01f || b.z <= 0.01f || c.z <= 0.01f) continue;
 
             // **Backface culling** - calculate avarage normal of the triangle
             float3 normal = (a + b + c) / 3;

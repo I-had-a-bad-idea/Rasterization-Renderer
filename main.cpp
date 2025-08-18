@@ -32,13 +32,15 @@ void Run(RenderTarget& target, Scene& scene, float fov){
 
     std::vector<Color> textureBytes(target.Width * target.Height * 4); // RGBA
 
-    // Render loop
     SetTargetFPS(60);
 
+    // Render loop
     while(!WindowShouldClose()){
 
+        // Update World
         scene.Update(target, GetFrameTime());
 
+        // Render the world
         Rasterizer::Render(scene, target);
 
 
@@ -57,7 +59,7 @@ void Run(RenderTarget& target, Scene& scene, float fov){
 
 
 int main() {
-    int width = 1920;  // Increased resolution for better visibility
+    int width = 1920;  // Full HD
     int height = 1080;
     float fov = 90; // FOV in degrees
 
@@ -69,5 +71,3 @@ int main() {
     
     return 0;
 }
-
-//ukxkxerenu@wnbaldwy.com
