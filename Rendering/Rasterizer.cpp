@@ -15,8 +15,10 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
         ObjectMesh& model = object.Mesh;
 
         // Transform all vertices once
+        if(scene.camera.CamTransform.has_changed || object.Obj_Transform.has_changed){ //Only recalculate when actually needed
         object.process_object(target.Size, scene.camera);
-
+        object.Obj_Transform.has_changed = false;
+        }
         // Triangles laid out as 0..N step 3
         for (size_t i = 0; i + 2 < model.Vertices.size(); i += 3) {
             const float3 a3 = model.screen_vertices[i + 0];
@@ -24,7 +26,7 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
             const float3 c3 = model.screen_vertices[i + 2];
 
             // Near-plane reject
-            if (a3.z <= 0.01f || b3.z <= 0.01f || c3.z <= 0.01f) continue;
+            if (a3.z <= 0.1f || b3.z <= 0.1f || c3.z <= 0.1f) continue;
 
             const float2 a2(a3.x, a3.y);
             const float2 b2(b3.x, b3.y);
@@ -131,4 +133,5 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
             }
         }
     }
+    scene.camera.CamTransform.has_changed = false;
 }

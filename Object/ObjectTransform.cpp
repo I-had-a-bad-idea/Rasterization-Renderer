@@ -16,7 +16,15 @@ ObjectTransform::ObjectTransform(float3 position, float3 rotation)
 void ObjectTransform::SetRotation(const float3& rot) {
     Rotation = rot;
     UpdateBasisVectors();
+    has_changed = true;
 }
+
+void ObjectTransform::SetPosition(const float3& pos){
+    Position = pos;
+    has_changed = true;
+}
+
+
 
 float3 ObjectTransform::ToWorldPoint(float3 p) const {
     return TransformVector(ihat, jhat, khat, p) + Position;

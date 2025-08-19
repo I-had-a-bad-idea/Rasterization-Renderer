@@ -9,11 +9,13 @@ public:
     float3 Rotation;
     float3 Position;
 
+    bool has_changed = true;
+
     ObjectTransform();                 
     ObjectTransform(float3 position, float3 rotation);         
 
     // Accessors for position
-    void SetPosition(const float3& pos) { Position = pos; }
+    void SetPosition(const float3& pos);
     float3 GetPosition() const { return Position; }
 
     // Accessors for rotation (auto-updates basis vectors)
