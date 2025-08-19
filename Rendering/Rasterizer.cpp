@@ -86,8 +86,7 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
 
             // Back-face cull via signed area (edge function equals twice-area)
             float area = Math::edge_function(a2, b2, c2);
-            // FIXED: Don't skip degenerate triangles - this was in your working version
-            // if (area == 0.0f) continue;   // Skip degenerate triangles
+            if (area > 0.0f) continue;   // Skip degenerate triangles
             float invArea = 1.0f / area;
 
             // Triangle bounds (clamped to screen)
