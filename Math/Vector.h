@@ -45,6 +45,9 @@ public:
     float3& operator*=(float scalar);
     float3& operator/=(float scalar);
 
+    float3 operator*(const float3& other) const;
+    float3& operator*=(const float3& other);
+
     float length() const;
     static float3 Normalize(const float3& v);
     static float3 cross(const float3& a, const float3& b);

@@ -1,7 +1,12 @@
 #include "Rasterizer.h"
 #include <algorithm>
 #include <cmath>
-#include "Maths.h"  // for Math::edge_function
+#include <thread>
+#include <vector>
+#include <mutex>
+#include <atomic>
+#include <memory>
+#include "Maths.h" 
 
 void Rasterizer::Render(Scene& scene, RenderTarget& target) {
     // Simple clears (predictable; swap to lazy-clears later if you want)
@@ -11,15 +16,29 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
     const int w = target.Width;
     const int h = target.Height;
 
+    // Determine optimal thread count (leave one core for system)
+    const unsigned int num_threads = std::max(1u, std::thread::hardware_concurrency() - 1);
+    
+    // Collect all triangles from all objects first
+    struct TriangleData {
+        float3 screen_vertices[3];
+        float2 texture_coords[3];
+        float3 normals[3];
+        std::shared_ptr<ObjectShader> shader;
+    };
+    
+    std::vector<TriangleData> all_triangles;
+    
     for (Object& object : scene.objects) {
         ObjectMesh& model = object.Mesh;
 
         // Transform all vertices once
-        if(scene.camera.CamTransform.has_changed || object.Obj_Transform.has_changed){ //Only recalculate when actually needed
-        object.process_object(target.Size, scene.camera);
-        object.Obj_Transform.has_changed = false;
+        if(scene.camera.CamTransform.has_changed || object.Obj_Transform.has_changed) {
+            object.process_object(target.Size, scene.camera);
+            object.Obj_Transform.has_changed = false;
         }
-        // Triangles laid out as 0..N step 3
+        
+        // Collect triangles from this object
         for (size_t i = 0; i + 2 < model.Vertices.size(); i += 3) {
             const float3 a3 = model.screen_vertices[i + 0];
             const float3 b3 = model.screen_vertices[i + 1];
@@ -28,13 +47,47 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
             // Near-plane reject
             if (a3.z <= 0.1f || b3.z <= 0.1f || c3.z <= 0.1f) continue;
 
+            TriangleData tri;
+            tri.screen_vertices[0] = a3;
+            tri.screen_vertices[1] = b3;
+            tri.screen_vertices[2] = c3;
+            
+            tri.texture_coords[0] = model.Texture_cords[i + 0];
+            tri.texture_coords[1] = model.Texture_cords[i + 1];
+            tri.texture_coords[2] = model.Texture_cords[i + 2];
+            
+            // Keep original normals from the working version
+            tri.normals[0] = model.Normals[i + 0];
+            tri.normals[1] = model.Normals[i + 1];
+            tri.normals[2] = model.Normals[i + 2];
+            
+            tri.shader = object.Object_Shader;
+            
+            all_triangles.push_back(tri);
+        }
+    }
+    
+    // Thread-safe triangle counter
+    std::atomic<size_t> triangle_index(0);
+    
+    // Lambda function for triangle rasterization worker
+    auto rasterize_triangles = [&]() {
+        size_t tri_idx;
+        while ((tri_idx = triangle_index.fetch_add(1)) < all_triangles.size()) {
+            const TriangleData& tri = all_triangles[tri_idx];
+            
+            const float3& a3 = tri.screen_vertices[0];
+            const float3& b3 = tri.screen_vertices[1];
+            const float3& c3 = tri.screen_vertices[2];
+
             const float2 a2(a3.x, a3.y);
             const float2 b2(b3.x, b3.y);
             const float2 c2(c3.x, c3.y);
 
             // Back-face cull via signed area (edge function equals twice-area)
             float area = Math::edge_function(a2, b2, c2);
-//            if (area == 0.0f) continue;   // keep CCW only
+            // FIXED: Don't skip degenerate triangles - this was in your working version
+            // if (area == 0.0f) continue;   // Skip degenerate triangles
             float invArea = 1.0f / area;
 
             // Triangle bounds (clamped to screen)
@@ -47,32 +100,31 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
 
             const int minX = std::max(0, (int)std::floor(min_xf));
             const int minY = std::max(0, (int)std::floor(min_yf));
-            const int maxX = std::min(w - 1, (int)std::ceil (max_xf));
-            const int maxY = std::min(h - 1, (int)std::ceil (max_yf));
+            const int maxX = std::min(w - 1, (int)std::ceil(max_xf));
+            const int maxY = std::min(h - 1, (int)std::ceil(max_yf));
 
             // Perspective-correct setup: pre-divide attributes by depth
             const float invZa = 1.0f / a3.z;
             const float invZb = 1.0f / b3.z;
             const float invZc = 1.0f / c3.z;
 
-            const float u0 = model.Texture_cords[i + 0].x;
-            const float v0 = model.Texture_cords[i + 0].y;
-            const float u1 = model.Texture_cords[i + 1].x;
-            const float v1 = model.Texture_cords[i + 1].y;
-            const float u2 = model.Texture_cords[i + 2].x;
-            const float v2 = model.Texture_cords[i + 2].y;
+            const float u0 = tri.texture_coords[0].x;
+            const float v0 = tri.texture_coords[0].y;
+            const float u1 = tri.texture_coords[1].x;
+            const float v1 = tri.texture_coords[1].y;
+            const float u2 = tri.texture_coords[2].x;
+            const float v2 = tri.texture_coords[2].y;
 
             const float u0z = u0 * invZa, v0z = v0 * invZa;
             const float u1z = u1 * invZb, v1z = v1 * invZb;
             const float u2z = u2 * invZc, v2z = v2 * invZc;
 
-            // Normal interpolation (barycentric in screen space)
-            float3 n0 = model.Normals[i + 0];
-            float3 n1 = model.Normals[i + 1];
-            float3 n2 = model.Normals[i + 2];
+            // Normal interpolation (barycentric in screen space) - same as working version
+            float3 n0 = tri.normals[0];
+            float3 n1 = tri.normals[1];
+            float3 n2 = tri.normals[2];
 
             // Edge-function increments across x/y:
-            // E_ab(p) = edge(a,b,p); dE/dx = (b.y-a.y); dE/dy = -(b.x-a.x)
             const float dx_w0 = (c2.y - b2.y);
             const float dy_w0 = -(c2.x - b2.x);
             const float dx_w1 = (a2.y - c2.y);
@@ -108,30 +160,46 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
                         const float depth = a3.z * alpha + b3.z * beta + c3.z * gamma;
                         const int idx = rowOffset + x;
 
+                        // FIXED: Use simple depth test like the working version instead of atomic operations
                         if (depth < target.depth_buffer[idx]) {
                             const float iz = invZa * alpha + invZb * beta + invZc * gamma;
                             const float u = (u0z * alpha + u1z * beta + u2z * gamma) / iz;
                             const float v = (v0z * alpha + v1z * beta + v2z * gamma) / iz;
 
                             float3 normal = float3::Normalize(n0 * alpha + n1 * beta + n2 * gamma);
-
-                            target.color_buffer[idx] = object.Object_Shader->PixelColor(float2(u, v), normal);
+                            
+                            // Color write - same as working version
+                            target.color_buffer[idx] = tri.shader->PixelColor(float2(u, v), normal);
                             target.depth_buffer[idx] = depth;
                         }
                     }
 
-                    // ✅ Move to next pixel (must be inside x-loop)
+                    // Move to next pixel
                     w0 += dx_w0;
                     w1 += dx_w1;
                     w2 += dx_w2;
                 }
 
-                // ✅ Move to next row (outside x-loop, inside y-loop)
+                // Move to next row
                 w0_row += dy_w0;
                 w1_row += dy_w1;
                 w2_row += dy_w2;
             }
         }
+    };
+
+    // Launch worker threads
+    std::vector<std::thread> threads;
+    threads.reserve(num_threads);
+    
+    for (unsigned int i = 0; i < num_threads; ++i) {
+        threads.emplace_back(rasterize_triangles);
     }
+    
+    // Wait for all threads to complete
+    for (auto& thread : threads) {
+        thread.join();
+    }
+    
     scene.camera.CamTransform.has_changed = false;
 }

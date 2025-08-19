@@ -106,3 +106,12 @@ float3 float3::cross(const float3& a, const float3& b) {
         a.x * b.y - a.y * b.x
     );
 }
+
+float3 float3::operator*(const float3& other) const {
+    return float3(x * other.x, y * other.y, z * other.z);
+}
+
+float3& float3::operator*=(const float3& other) {
+    x *= other.x; y *= other.y; z *= other.z;
+    return *this;
+}
