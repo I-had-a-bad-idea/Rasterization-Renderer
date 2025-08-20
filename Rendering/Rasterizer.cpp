@@ -187,18 +187,13 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
         }
     };
 
-    // Launch worker threads
-    std::vector<std::thread> threads;
-    threads.reserve(num_threads);
-    
+    static ThreadPool pool(num_threads); // Persistent across frames
+
     for (unsigned int i = 0; i < num_threads; ++i) {
-        threads.emplace_back(rasterize_triangles);
+        pool.enqueue(rasterize_triangles);
     }
-    
-    // Wait for all threads to complete
-    for (auto& thread : threads) {
-        thread.join();
-    }
+
+    pool.wait(); // wait for all work to finish
     
     scene.camera.CamTransform.has_changed = false;
 }

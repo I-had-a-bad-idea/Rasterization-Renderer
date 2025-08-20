@@ -14,6 +14,7 @@
 #include "Object.h"
 #include "Maths.h"
 #include "Scene.h"
+#include "Threadpool.h"
 #include "Object_mesh.h"
 
 class Rasterizer{

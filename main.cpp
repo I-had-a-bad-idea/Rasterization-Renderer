@@ -32,7 +32,7 @@ void Run(RenderTarget& target, Scene& scene, float fov){
 
     std::vector<Color> textureBytes(target.Width * target.Height * 4); // RGBA
 
-    SetTargetFPS(60);
+   SetTargetFPS(60);
 
     // Render loop
     while(!WindowShouldClose()){
@@ -42,6 +42,8 @@ void Run(RenderTarget& target, Scene& scene, float fov){
 
         // Render the world
         Rasterizer::Render(scene, target);
+
+        std::cout << "FPS: " << GetFPS() << "\n";
 
 
         // Write rasterizer output to texture and display on window
