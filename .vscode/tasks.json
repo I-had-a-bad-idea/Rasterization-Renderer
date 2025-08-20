@@ -3,11 +3,13 @@
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "C/C++: g++.exe build active file with raylib",
+            "label": "C/C++: g++.exe build active file with raylib (Release)",
             "command": "C:\\msys64\\ucrt64\\bin\\g++.exe",
             "args": [
                 "-fdiagnostics-color=always",
-                "-g",
+                "-O3",  // Aggressive optimizations
+                "-flto",  // Link-Time Optimization
+                "-DNDEBUG",  // Disable asserts for release mode
                 "-I", "C:/msys64/mingw64/include",
                 "-I", "${workspaceFolder}/Helper",
                 "-I", "${workspaceFolder}/Math",
@@ -26,19 +28,49 @@
                 "-lgdi32",
                 "-lwinmm",
                 "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+                "${fileDirname}\\${fileBasenameNoExtension}_release.exe"
             ],
             "options": {
                 "cwd": "${fileDirname}"
             },
-            "problemMatcher": [
-                "$gcc"
+            "problemMatcher": ["$gcc"],
+            "group": "build",
+            "detail": "Task with raylib linking (Release)"
+        },
+        {
+            "type": "cppbuild",
+            "label": "C/C++: g++.exe build active file with raylib (Release)",
+            "command": "C:\\msys64\\ucrt64\\bin\\g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-O2",  // Optimizations enabled
+                "-DNDEBUG", // Disable asserts
+                "-I", "C:/msys64/mingw64/include",
+                "-I", "${workspaceFolder}/Helper",
+                "-I", "${workspaceFolder}/Math",
+                "-I", "${workspaceFolder}/Object",
+                "-I", "${workspaceFolder}/Rendering",
+                "-I", "${workspaceFolder}/Scenes",
+                "${workspaceFolder}/*.cpp",
+                "${workspaceFolder}/Helper/*.cpp",
+                "${workspaceFolder}/Math/*.cpp",
+                "${workspaceFolder}/Object/*.cpp",
+                "${workspaceFolder}/Rendering/*.cpp",
+                "${workspaceFolder}/Scenes/*.cpp",
+                "-L", "C:/msys64/mingw64/lib",
+                "-lraylib",
+                "-lopengl32",
+                "-lgdi32",
+                "-lwinmm",
+                "-o",
+                "${fileDirname}\\${fileBasenameNoExtension}_release.exe"
             ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
+            "options": {
+                "cwd": "${fileDirname}"
             },
-            "detail": "Task with raylib linking"
+            "problemMatcher": ["$gcc"],
+            "group": "build",
+            "detail": "Task with raylib linking (Release)"
         }
     ]
 }

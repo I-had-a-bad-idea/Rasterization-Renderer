@@ -32,7 +32,7 @@ void Run(RenderTarget& target, Scene& scene, float fov){
 
     std::vector<Color> textureBytes(target.Width * target.Height * 4); // RGBA
 
-   SetTargetFPS(60);
+   SetTargetFPS(1000);
 
     // Render loop
     while(!WindowShouldClose()){
@@ -43,7 +43,18 @@ void Run(RenderTarget& target, Scene& scene, float fov){
         // Render the world
         Rasterizer::Render(scene, target);
 
-        std::cout << "FPS: " << GetFPS() << "\n";
+        static float timer = 0.0f;
+        static int frameCount = 0;
+
+        timer += GetFrameTime();
+        frameCount++;
+
+        if (timer >= 1.0f) {
+            int fps = frameCount;  // number of frames in the last second
+            std::cout << "FPS: " << fps << "\n";
+            frameCount = 0;
+            timer = 0.0f;
+        }
 
 
         // Write rasterizer output to texture and display on window
@@ -61,8 +72,8 @@ void Run(RenderTarget& target, Scene& scene, float fov){
 
 
 int main() {
-    int width = 1920;  // Full HD
-    int height = 1080;
+    int width = 960;
+    int height = 540;
     float fov = 90; // FOV in degrees
 
     TestScene scene;
