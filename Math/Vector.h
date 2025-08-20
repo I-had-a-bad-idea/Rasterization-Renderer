@@ -47,6 +47,7 @@ public:
 
     float3 operator*(const float3& other) const;
     float3& operator*=(const float3& other);
+    float3 operator+(const float3& other) const;
 
     float length() const;
     static float3 Normalize(const float3& v);

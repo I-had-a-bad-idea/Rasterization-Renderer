@@ -5,25 +5,35 @@
 #include <memory>
 #include "Maths.h"
 
-class TextureShader : public ObjectShader{
-    public:
-        std::shared_ptr<MeshTexture> Shader_texture;
-        TextureShader(std::shared_ptr<MeshTexture> shader_texture);
-        
-        float3 PixelColor(float2 tex_coords, float3 normal) const override;
+enum class ShaderType {
+    Texture,
+    LitTexture
 };
 
-class LitTextureShader : public ObjectShader{
-    public:
-        std::shared_ptr<MeshTexture> Shader_texture;
-        float3 Direction_to_light;
-        float Light_intensity = 1.0;
-
-        LitTextureShader(std::shared_ptr<MeshTexture> shader_texture, float3 direction_to_light);
-        
-        float3 PixelColor(float2 tex_coords, float3 normal) const override;
-
+class ObjectShader {
+public:
+    ShaderType type;
+    virtual ~ObjectShader() = default;
 };
 
+class TextureShader : public ObjectShader {
+public:
+    std::shared_ptr<MeshTexture> Shader_texture;
+    TextureShader(std::shared_ptr<MeshTexture> tex) {
+        Shader_texture = std::move(tex);
+        type = ShaderType::Texture;
+    }
+};
+
+class LitTextureShader : public ObjectShader {
+public:
+    std::shared_ptr<MeshTexture> Shader_texture;
+    float3 Direction_to_light;
+    LitTextureShader(std::shared_ptr<MeshTexture> tex, float3 dir) {
+        Shader_texture = std::move(tex);
+        Direction_to_light = dir;
+        type = ShaderType::LitTexture;
+    }
+};
 
 #endif

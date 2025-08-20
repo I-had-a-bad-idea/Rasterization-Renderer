@@ -9,7 +9,7 @@
 #include "Maths.h" 
 
 void Rasterizer::Render(Scene& scene, RenderTarget& target) {
-    // Simple clears (predictable; swap to lazy-clears later if you want)
+    // Simple clears
     std::fill(target.color_buffer.begin(), target.color_buffer.end(), float3(0.0f, 0.0f, 0.0f));
     std::fill(target.depth_buffer.begin(), target.depth_buffer.end(), 1000.0f);
 
@@ -33,8 +33,8 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
         ObjectMesh& model = object.Mesh;
 
         // Transform all vertices once
-        if(scene.camera.CamTransform.has_changed || object.Obj_Transform.has_changed) {
-            object.process_object(target.Size, scene.camera);
+        if(scene.camera.CamTransform.has_changed || object.Obj_Transform.has_changed) { 
+            object.process_object(target.Size, scene.camera); // Only update, when changed
             object.Obj_Transform.has_changed = false;
         }
         
@@ -56,7 +56,7 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
             tri.texture_coords[1] = model.Texture_cords[i + 1];
             tri.texture_coords[2] = model.Texture_cords[i + 2];
             
-            // Keep original normals from the working version
+           
             tri.normals[0] = model.Normals[i + 0];
             tri.normals[1] = model.Normals[i + 1];
             tri.normals[2] = model.Normals[i + 2];
@@ -118,7 +118,7 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
             const float u1z = u1 * invZb, v1z = v1 * invZb;
             const float u2z = u2 * invZc, v2z = v2 * invZc;
 
-            // Normal interpolation (barycentric in screen space) - same as working version
+            // Normal interpolation (barycentric in screen space)
             float3 n0 = tri.normals[0];
             float3 n1 = tri.normals[1];
             float3 n2 = tri.normals[2];
@@ -159,16 +159,28 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
                         const float depth = a3.z * alpha + b3.z * beta + c3.z * gamma;
                         const int idx = rowOffset + x;
 
-                        // FIXED: Use simple depth test like the working version instead of atomic operations
                         if (depth < target.depth_buffer[idx]) {
                             const float iz = invZa * alpha + invZb * beta + invZc * gamma;
                             const float u = (u0z * alpha + u1z * beta + u2z * gamma) / iz;
                             const float v = (v0z * alpha + v1z * beta + v2z * gamma) / iz;
 
-                            float3 normal = float3::Normalize(n0 * alpha + n1 * beta + n2 * gamma);
+                            float3 normal(n0 * alpha + n1 * beta + n2 * gamma);
                             
-                            // Color write - same as working version
-                            target.color_buffer[idx] = tri.shader->PixelColor(float2(u, v), normal);
+                            // Color write
+                            switch (tri.shader->type) {
+                                case ShaderType::Texture: {
+                                    auto* shader = static_cast<TextureShader*>(tri.shader.get());
+                                    target.color_buffer[idx] = shader->Shader_texture->Sample(u, v);
+                                    break;
+                                }
+                                case ShaderType::LitTexture: {
+                                    auto* shader = static_cast<LitTextureShader*>(tri.shader.get());
+                                    float light_intensity = (Math::dot(normal, shader->Direction_to_light) + 1) * 0.5f;
+                                    light_intensity = Math::lerp(0.2f, 1.0f, light_intensity);
+                                    target.color_buffer[idx] = shader->Shader_texture->Sample(u, v) * light_intensity;
+                                    break;
+                                }
+                            }
                             target.depth_buffer[idx] = depth;
                         }
                     }

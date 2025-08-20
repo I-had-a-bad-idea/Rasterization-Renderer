@@ -115,3 +115,7 @@ float3& float3::operator*=(const float3& other) {
     x *= other.x; y *= other.y; z *= other.z;
     return *this;
 }
+
+float3 float3::operator+(const float3& other) const{
+    return float3(x + other.x, y + other.y, z + other.z);
+}

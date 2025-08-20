@@ -21,7 +21,8 @@ class Rasterizer{
     public:
         static void write_image_to_file(std::vector<float3>& image, int width, int height, const std::string& name);
         static void Render(Scene& scene, RenderTarget& target);
-
+        
+    
 };
 
 
