@@ -10,6 +10,7 @@
                 "-O3",  // Aggressive optimizations
                 "-flto",  // Link-Time Optimization
                 "-DNDEBUG",  // Disable asserts for release mode
+                "-s",  // Strip debugging information
                 "-I", "C:/msys64/mingw64/include",
                 "-I", "${workspaceFolder}/Helper",
                 "-I", "${workspaceFolder}/Math",
@@ -24,10 +25,14 @@
                 "${workspaceFolder}/Scenes/*.cpp",
                 "-L", "C:/msys64/mingw64/lib",
                 "-lraylib",
+                "-finline-functions",  // Enable aggressive function inlining
                 "-lopengl32",
                 "-lgdi32",
                 "-lwinmm",
                 "-o",
+
+                "-fprofile-generate",  // Profiling build
+                "-fprofile-use",  // Use the generated profile for final optimizations
                 "${fileDirname}\\${fileBasenameNoExtension}_release.exe"
             ],
             "options": {
