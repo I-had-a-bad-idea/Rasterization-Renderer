@@ -68,6 +68,10 @@ void Run(RenderTarget &target, Scene &scene, float fov) {
         return;
     }
 
+    // Enable relative mouse mode (always captured)
+    SDL_SetRelativeMouseMode(SDL_TRUE);
+    SDL_ShowCursor(SDL_DISABLE);
+
     // Create OpenGL texture
     GLuint texID;
     glGenTextures(1, &texID);
@@ -86,6 +90,9 @@ void Run(RenderTarget &target, Scene &scene, float fov) {
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) running = false;
+            if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+                running = false;
+            }
         }
 
         // Update scene
