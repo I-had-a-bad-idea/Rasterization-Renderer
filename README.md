@@ -1,6 +1,6 @@
 # Rasterization-Renderer
 
-A simple software rasterization-based 3D renderer built with C++ and SDL2.
+A basic software rasterization-based 3D renderer built with C++ and SDL.
 
 ## Features
 
@@ -15,8 +15,6 @@ A simple software rasterization-based 3D renderer built with C++ and SDL2.
 
 - C++17 or later
 - SDL2 and SDL2_image
-- OpenGL (for display only)
-- CMake 3.10 or later (for building)
 - A C++ compiler (GCC, Clang, or MSVC)
 
 ## Installation
@@ -48,7 +46,7 @@ Run the compiled executable:
 
 ### Controls
 - **W, A, S, D:** Move the camera forward, left, backward, and right
-- **Middle Mouse Button + Mouse:** Look around (drag to rotate camera)
+- **Mouse:** Look around 
 - **ESC:** Exit the application
 
 ## Project Structure
@@ -65,16 +63,17 @@ Rasterization-Renderer/
 
 ### Core Components
 
-- **Rasterizer:** Main rendering pipeline implementation
-- **RenderTarget:** Frame buffer and depth buffer management
-- **Object:** 3D model representation with transformation
-- **Scene:** Scene graph and object management
-- **Camera:** View frustum and camera movement
-- **Shader:** Basic and lit texture shading implementations
+- [**Rasterizer:**](Rendering/Rasterizer.cpp) Main rendering pipeline implementation
+- [**Math:**](Math/Maths.cpp) Implementation of all the math 
+- [**Threadpool:**](Rendering/Threadpool.cpp) Threadpool for multithreading
+- [**RenderTarget:**](Rendering/RenderTarget.h) Frame buffer and depth buffer management
+- [**Object:**](Object/Object.h) 3D object with model, shader and [transform](Object/ObjectTransform.h)
+- [**Mesh:**](Object/Object_mesh.cpp) Representation of a 3D model with texture
+- [**Obj_Loader:**](Helper/Obj_loader.cpp) Loads an .obj file and creates a mesh
+- [**Scene:**](Scenes/Scene.h) Camera and object management ([Example Scene](Scenes/Test_scene.cpp))
 
 ## Performance
-
-The renderer uses multi-threading to improve performance:
+-
 - Thread pool for triangle rasterization
 - Optimized vertex transformation
 - Efficient back-face culling
