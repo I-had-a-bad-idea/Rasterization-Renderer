@@ -86,7 +86,7 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
 
             // Back-face cull via signed area (edge function equals twice-area)
             float area = Math::edge_function(a2, b2, c2);
-            if (area > 0.0f) continue;   // Skip degenerate triangles
+            if (area > 0.0f) continue;   // Backface cull
             float invArea = 1.0f / area;
 
             // Triangle bounds (clamped to screen)
@@ -163,8 +163,6 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
                             const float iz = invZa * alpha + invZb * beta + invZc * gamma;
                             const float u = (u0z * alpha + u1z * beta + u2z * gamma) / iz;
                             const float v = (v0z * alpha + v1z * beta + v2z * gamma) / iz;
-
-                            float3 normal(n0 * alpha + n1 * beta + n2 * gamma);
                             
                             // Color write
                             switch (tri.shader->type) {
@@ -175,6 +173,7 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
                                 }
                                 case ShaderType::LitTexture: {
                                     auto* shader = static_cast<LitTextureShader*>(tri.shader.get());
+                                    float3 normal(n0 * alpha + n1 * beta + n2 * gamma);
                                     float light_intensity = (Math::dot(normal, shader->Direction_to_light) + 1) * 0.5f;
                                     light_intensity = Math::lerp(0.2f, 1.0f, light_intensity);
                                     target.color_buffer[idx] = shader->Shader_texture->Sample(u, v) * light_intensity;

@@ -8,6 +8,7 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-O3",  // Aggressive optimizations
+                "-ffast-math",
 //                "-flto",  // Link-Time Optimization
                 "-DNDEBUG",  // Disable asserts for release mode
                 "-s",  // Strip debugging information
