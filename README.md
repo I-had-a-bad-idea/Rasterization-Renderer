@@ -41,7 +41,7 @@ g++ -O3 -I. -I./Helper -I./Math -I./Object -I./Rendering -I./Scenes ./*.cpp ./He
 
 Run the compiled executable:
 ```bash
-./renderer.exe
+main_release.exe
 ```
 
 ### Controls
