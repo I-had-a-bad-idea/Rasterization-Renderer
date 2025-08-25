@@ -1,66 +1,84 @@
 # Rasterization-Renderer
 
-A simple rasterization-based 3D renderer built with C++
+A simple software rasterization-based 3D renderer built with C++ and SDL2.
 
 ## Features
 
-- **Rasterization Rendering:** Basic 3D rendering using rasterization.
-- **Scene Management:** Support for loading 3D objects (in ".obj" format) and setting up a scene with multiple objects.
-- **Camera Movement:** Simple first-person camera with mouse and keyboard control.
-- **Basic Shading:** Supports both texture-based and lit shading for objects.
+- **Rasterization Rendering:** Fast CPU-based 3D rendering using rasterization
+- **Multi-threaded Rendering:** Optimized performance using thread pools
+- **Scene Management:** Support for loading 3D objects (in .obj format)
+- **Camera Controls:** First-person camera with mouse and keyboard input
+- **Texture Support:** Both basic and lit texture shading
+- **Performance:** Real-time rendering with FPS counter
 
 ## Requirements
 
 - C++17 or later
-- SDL2 or later (for window handling)
-- A C++ compiler (e.g., GCC, Clang, or MSVC)
+- SDL2 and SDL2_image
+- OpenGL (for display only)
+- CMake 3.10 or later (for building)
+- A C++ compiler (GCC, Clang, or MSVC)
 
 ## Installation
 
-1. Clone this repository:
-    ```bash
-    git clone https://github.com/I-had-a-bad-idea/Rasterization-Renderer.git
-    cd rasterization-renderer
-    ```
+### Windows (MSYS2)
 
-#TODO find out how this should be done
-2. Compile the project using your preferred C++ compiler. If you're using `g++`:
-    ```bash
-    
-    ```
+1. Install MSYS2 from https://www.msys2.org/
+
+2. Open MSYS2 UCRT64 terminal and install dependencies:
+```bash
+pacman -S mingw-w64-ucrt-x86_64-gcc
+pacman -S mingw-w64-ucrt-x86_64-SDL2
+pacman -S mingw-w64-ucrt-x86_64-SDL2_image
+```
+
+3. Clone and build the project:
+```bash
+git clone https://github.com/I-had-a-bad-idea/Rasterization-Renderer.git
+cd Rasterization-Renderer
+g++ -O3 -I. -I./Helper -I./Math -I./Object -I./Rendering -I./Scenes ./*.cpp ./Helper/*.cpp ./Math/*.cpp ./Object/*.cpp ./Rendering/*.cpp ./Scenes/*.cpp -lSDL2 -lSDL2_image -lopengl32 -o renderer.exe
+```
 
 ## Usage
 
-### Running the Renderer
-
-To run the renderer, simply execute the compiled executable:
-
-#TODO again find the right command
+Run the compiled executable:
 ```bash
-
+./renderer.exe
 ```
 
-This will open a window to which the scene is rendered. The basic controls are:
-
-- **W, A, S, D:** Move the camera forward, left, backward, and right.
-- **Middle Mouse Buttn + Mouse movement:** Look around (drag to rotate the camera).
-
-
-The renderer will render a scene that includes a floor, a monkey model, and a few cubes. You can add more objects or modify the existing ones by editing the TestScene class.
-
+### Controls
+- **W, A, S, D:** Move the camera forward, left, backward, and right
+- **Middle Mouse Button + Mouse:** Look around (drag to rotate camera)
+- **ESC:** Exit the application
 
 ## Project Structure
-#TODO add the project structure
 
-### Main Classes and Functions:
+```
+Rasterization-Renderer/
+├── Helper/           # Utility functions and helpers
+├── Math/            # Math operations and vector types
+├── Object/          # 3D object and mesh handling
+├── Rendering/       # Core rendering functionality
+├── Scenes/          # Scene management and test scenes
+└── main.cpp         # Application entry point
+```
 
-- **Rasterizer**: Handles the actual rendering process, including clearing the screen, drawing triangles, depth testing, and shading.
-- **Math**: A class dealing with most of the math
-- **Object**: Represents a 3D object, containing its mesh, transformations, and shaders.
-- **ObjectMesh**: Contains vertices, normals, and texture coordinates for a 3D model.
-- **Shaders**: Implements the shaders used for rendering, including texture sampling and lighting calculations.
-- **TestScene**: Defines the scene setup, including objects and camera configurations.
-- **ObjectTransform**: Handles the transformation of objects between world and local space.
+### Core Components
+
+- **Rasterizer:** Main rendering pipeline implementation
+- **RenderTarget:** Frame buffer and depth buffer management
+- **Object:** 3D model representation with transformation
+- **Scene:** Scene graph and object management
+- **Camera:** View frustum and camera movement
+- **Shader:** Basic and lit texture shading implementations
+
+## Performance
+
+The renderer uses multi-threading to improve performance:
+- Thread pool for triangle rasterization
+- Optimized vertex transformation
+- Efficient back-face culling
+- Fast depth testing
 
 ## License
 
