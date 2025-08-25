@@ -1,5 +1,7 @@
 #include <iostream>
 #include <string>
+#include <vector>
+#include <algorithm>
 #include <filesystem>
 #include "Object/Object.h"
 #include "Math/Vector.h"
@@ -12,19 +14,23 @@
 
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_opengl.h>
 
-
-// Convert RenderTarget to SDL texture pixels (RGBA8888)
-void ToFlatByteArray(RenderTarget &renderTarget, std::vector<Uint32> &data) {
-    data.resize(renderTarget.color_buffer.size());
+// Convert RenderTarget to byte array (RGBA8888)
+void ToFlatByteArray(RenderTarget &renderTarget, std::vector<Uint8> &data) {
+    data.resize(renderTarget.color_buffer.size() * 4);
 
     for (size_t i = 0; i < renderTarget.color_buffer.size(); i++) {
         float3 &col = renderTarget.color_buffer[i];
-        Uint8 r = static_cast<Uint8>(std::clamp(col.r() * 255.0f, 0.0f, 255.0f));
+        Uint8 r = static_cast<Uint8>(std::clamp(col.r(), 0.0f, 1.0f) * 255.0f);
         Uint8 g = static_cast<Uint8>(std::clamp(col.g(), 0.0f, 1.0f) * 255.0f);
         Uint8 b = static_cast<Uint8>(std::clamp(col.b(), 0.0f, 1.0f) * 255.0f);
         Uint8 a = 255;
-        data[i] = (a << 24) | (b << 16) | (g << 8) | r; // SDL_PIXELFORMAT_RGBA8888
+
+        data[i * 4 + 0] = r;
+        data[i * 4 + 1] = g;
+        data[i * 4 + 2] = b;
+        data[i * 4 + 3] = a;
     }
 }
 
@@ -35,13 +41,18 @@ void Run(RenderTarget &target, Scene &scene, float fov) {
         return;
     }
 
+    // Request an OpenGL 2.1 context
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+
+    // Create window
     SDL_Window* window = SDL_CreateWindow(
         "Rasterization-Renderer",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
         target.Width,
         target.Height,
-        SDL_WINDOW_SHOWN
+        SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
     );
     if (!window) {
         std::cerr << "Window could not be created: " << SDL_GetError() << std::endl;
@@ -49,16 +60,24 @@ void Run(RenderTarget &target, Scene &scene, float fov) {
         return;
     }
 
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    SDL_Texture* texture = SDL_CreateTexture(
-        renderer,
-        SDL_PIXELFORMAT_RGBA8888,
-        SDL_TEXTUREACCESS_STREAMING,
-        target.Width,
-        target.Height
-    );
+    SDL_GLContext glContext = SDL_GL_CreateContext(window);
+    if (!glContext) {
+        std::cerr << "OpenGL context could not be created: " << SDL_GetError() << std::endl;
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return;
+    }
 
-    std::vector<Uint32> pixels(target.Width * target.Height);
+    // Create OpenGL texture
+    GLuint texID;
+    glGenTextures(1, &texID);
+    glBindTexture(GL_TEXTURE_2D, texID);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, target.Width, target.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+    std::vector<Uint8> pixels(target.Width * target.Height * 4);
+
     bool running = true;
     Uint32 lastTime = SDL_GetTicks();
     int frameCount = 0;
@@ -69,7 +88,7 @@ void Run(RenderTarget &target, Scene &scene, float fov) {
             if (e.type == SDL_QUIT) running = false;
         }
 
-        // Update world
+        // Update scene
         Uint32 now = SDL_GetTicks();
         float deltaTime = (now - lastTime) / 1000.0f;
         lastTime = now;
@@ -86,21 +105,33 @@ void Run(RenderTarget &target, Scene &scene, float fov) {
             fpsTimer = now;
         }
 
-        // Copy rasterizer output to SDL texture
+        // Copy rasterizer output into byte array
         ToFlatByteArray(target, pixels);
-        SDL_UpdateTexture(texture, nullptr, pixels.data(), target.Width * sizeof(Uint32));
 
-        SDL_RenderClear(renderer);
-        SDL_RenderCopy(renderer, texture, nullptr, nullptr);
-        SDL_RenderPresent(renderer);
+        // Upload to OpenGL texture
+        glBindTexture(GL_TEXTURE_2D, texID);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, target.Width, target.Height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+
+        // Draw fullscreen quad
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glEnable(GL_TEXTURE_2D);
+        glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 1.0f); glVertex2f(-1.0f, -1.0f);
+        glTexCoord2f(1.0f, 1.0f); glVertex2f( 1.0f, -1.0f);
+        glTexCoord2f(1.0f, 0.0f); glVertex2f( 1.0f,  1.0f);
+        glTexCoord2f(0.0f, 0.0f); glVertex2f(-1.0f,  1.0f);
+        glEnd();
+        glDisable(GL_TEXTURE_2D);
+
+        SDL_GL_SwapWindow(window);
     }
 
-    SDL_DestroyTexture(texture);
-    SDL_DestroyRenderer(renderer);
+    glDeleteTextures(1, &texID);
+    SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
-
 
 int main(int argc, char* argv[]) {
     int width = 960;
