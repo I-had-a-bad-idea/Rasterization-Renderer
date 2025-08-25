@@ -1,20 +1,22 @@
-
 #include "Image_loader.h"
 
 std::vector<unsigned char> ImageLoader::png_file_to_bytes(const std::string& filePath) {
-    // Load PNG using raylib
-    Image image = LoadImage(filePath.c_str());
-    if (image.data == nullptr) {
-        throw std::runtime_error("Failed to load PNG: " + filePath);
+    // Load PNG using SDL_image
+    SDL_Surface* surface = IMG_Load(filePath.c_str());
+    if (!surface) {
+        throw std::runtime_error("Failed to load PNG: " + filePath + " SDL Error: " + IMG_GetError());
     }
 
-    int width = image.width;
-    int height = image.height;
+    int width = surface->w;
+    int height = surface->h;
 
-    // Convert to 24-bit RGB
-    ImageFormat(&image, PIXELFORMAT_UNCOMPRESSED_R8G8B8);
-
-    unsigned char* pixels = (unsigned char*)image.data;
+    // Convert surface to 24-bit RGB if needed
+    SDL_Surface* rgbSurface = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGB24, 0);
+    SDL_FreeSurface(surface);
+    
+    if (!rgbSurface) {
+        throw std::runtime_error("Failed to convert image format: " + std::string(SDL_GetError()));
+    }
 
     // Build buffer: [w0][w1][h0][h1] + BGR pixels
     std::vector<unsigned char> buffer;
@@ -25,7 +27,10 @@ std::vector<unsigned char> ImageLoader::png_file_to_bytes(const std::string& fil
     buffer[2] = height & 0xFF;
     buffer[3] = (height >> 8) & 0xFF;
 
+    // Get pixel data
+    unsigned char* pixels = static_cast<unsigned char*>(rgbSurface->pixels);
     size_t index = 4;
+    
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             int i = (y * width + x) * 3;
@@ -41,7 +46,7 @@ std::vector<unsigned char> ImageLoader::png_file_to_bytes(const std::string& fil
         }
     }
 
-    UnloadImage(image);
+    SDL_FreeSurface(rgbSurface);
 
     return buffer;
 }

@@ -8,7 +8,7 @@
 #include "Object.h"
 #include "Obj_loader.h"
 #include "Camera.h"
-#include "raylib.h"
+#include <SDL2/SDL.h>
 
 class Scene{
     public:

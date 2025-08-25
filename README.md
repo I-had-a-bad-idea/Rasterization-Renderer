@@ -12,7 +12,7 @@ A simple rasterization-based 3D renderer built with C++
 ## Requirements
 
 - C++17 or later
-- raylib (for window handling and real-time rendering)
+- SDL2 or later (for window handling)
 - A C++ compiler (e.g., GCC, Clang, or MSVC)
 
 ## Installation

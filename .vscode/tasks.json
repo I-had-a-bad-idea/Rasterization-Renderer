@@ -3,12 +3,12 @@
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "C/C++: g++.exe build active file with raylib (Release)",
+            "label": "C/C++: g++.exe build active file with SDL (Release)",
             "command": "C:\\msys64\\ucrt64\\bin\\g++.exe",
             "args": [
                 "-fdiagnostics-color=always",
                 "-O3",  // Aggressive optimizations
-                "-flto",  // Link-Time Optimization
+//                "-flto",  // Link-Time Optimization
                 "-DNDEBUG",  // Disable asserts for release mode
                 "-s",  // Strip debugging information
                 "-I", "C:/msys64/mingw64/include",
@@ -24,15 +24,17 @@
                 "${workspaceFolder}/Rendering/*.cpp",
                 "${workspaceFolder}/Scenes/*.cpp",
                 "-L", "C:/msys64/mingw64/lib",
-                "-lraylib",
+                "-lmingw32",
                 "-finline-functions",  // Enable aggressive function inlining
                 "-lopengl32",
                 "-lgdi32",
+                "-lSDL2main",
+                "-lSDL2",  // Link against SDL2
                 "-lwinmm",
+                "-lSDL2_image",
                 "-o",
-
-                "-fprofile-generate",  // Profiling build
-                "-fprofile-use",  // Use the generated profile for final optimizations
+//                "-fprofile-generate",  // Profiling build
+//                "-fprofile-use",  // Use the generated profile for final optimizations
                 "${fileDirname}\\${fileBasenameNoExtension}_release.exe"
             ],
             "options": {
@@ -40,42 +42,7 @@
             },
             "problemMatcher": ["$gcc"],
             "group": "build",
-            "detail": "Task with raylib linking (Release)"
+            "detail": "Build with SDL(Release)"
         },
-        {
-            "type": "cppbuild",
-            "label": "C/C++: g++.exe build active file with raylib (Release)",
-            "command": "C:\\msys64\\ucrt64\\bin\\g++.exe",
-            "args": [
-                "-fdiagnostics-color=always",
-                "-O2",  // Optimizations enabled
-                "-DNDEBUG", // Disable asserts
-                "-I", "C:/msys64/mingw64/include",
-                "-I", "${workspaceFolder}/Helper",
-                "-I", "${workspaceFolder}/Math",
-                "-I", "${workspaceFolder}/Object",
-                "-I", "${workspaceFolder}/Rendering",
-                "-I", "${workspaceFolder}/Scenes",
-                "${workspaceFolder}/*.cpp",
-                "${workspaceFolder}/Helper/*.cpp",
-                "${workspaceFolder}/Math/*.cpp",
-                "${workspaceFolder}/Object/*.cpp",
-                "${workspaceFolder}/Rendering/*.cpp",
-                "${workspaceFolder}/Scenes/*.cpp",
-                "-L", "C:/msys64/mingw64/lib",
-                "-lraylib",
-                "-lopengl32",
-                "-lgdi32",
-                "-lwinmm",
-                "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}_release.exe"
-            ],
-            "options": {
-                "cwd": "${fileDirname}"
-            },
-            "problemMatcher": ["$gcc"],
-            "group": "build",
-            "detail": "Task with raylib linking (Release)"
-        }
     ]
 }

@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <fstream>
-#include "raylib.h"
+#include <SDL2/SDL_image.h>
 
 class ImageLoader{
     public:
