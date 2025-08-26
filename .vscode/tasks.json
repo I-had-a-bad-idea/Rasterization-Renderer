@@ -37,7 +37,7 @@
                 "-o",
 //                "-fprofile-generate",  // Profiling build
 //                "-fprofile-use",  // Use the generated profile for final optimizations
-                "${fileDirname}\\${fileBasenameNoExtension}_release.exe"
+                "${fileDirname}\\Rasterization_renderer.exe"
             ],
             "options": {
                 "cwd": "${fileDirname}"
