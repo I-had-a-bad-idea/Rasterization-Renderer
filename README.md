@@ -1,3 +1,14 @@
+![MIT License](https://img.shields.io/badge/license-MIT-green)
+![C++](https://img.shields.io/badge/c++-17+-blue)
+![SDL2](https://img.shields.io/badge/SDL2-red)
+![Commit Activity](https://img.shields.io/github/commit-activity/m/I-had-a-bad-idea/Rasterization-Renderer)
+![Last Commit](https://img.shields.io/github/last-commit/I-had-a-bad-idea/Rasterization-Renderer)
+![Open Issues](https://img.shields.io/github/issues/I-had-a-bad-idea/Rasterization-Renderer)
+![Closed Issues](https://img.shields.io/github/issues-closed/I-had-a-bad-idea/Rasterization-Renderer)
+![Repo Size](https://img.shields.io/github/repo-size/I-had-a-bad-idea/Rasterization-Renderer)
+![Contributors](https://img.shields.io/github/contributors/I-had-a-bad-idea/Rasterization-Renderer)
+
+
 # Rasterization-Renderer
 
 A basic software rasterization-based 3D renderer built with C++ and SDL.
