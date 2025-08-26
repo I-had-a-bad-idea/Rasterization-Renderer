@@ -3,8 +3,9 @@
 #include <iostream>
 #include <array>
 
-Object ObjLoader::load_object(std::string path, float3 position, float3 rotation, std::string name){
-    std::string obj_path = std::filesystem::current_path().string() + path;
+Object ObjLoader::load_object(std::string obj_path, std::string texture_path, float3 position, float3 rotation, std::string name){
+    obj_path = std::filesystem::current_path().string() + obj_path;
+    texture_path = std::filesystem::current_path().string() + texture_path;
     std::string obj_string = StringHelper::readFileToString(obj_path);
     auto mesh_data = load_obj_file(obj_string);
 
@@ -14,7 +15,7 @@ Object ObjLoader::load_object(std::string path, float3 position, float3 rotation
 
     if (object_points.empty()) {
        std::cerr << "Failed to load model or model is empty!" << std::endl;
-       throw std::runtime_error("Failed to load model: " + path);
+       throw std::runtime_error("Failed to load model: " + obj_path);
     }
 
     // Create random colors
@@ -25,8 +26,13 @@ Object ObjLoader::load_object(std::string path, float3 position, float3 rotation
 
     // Load texture + shader
     auto texture = std::make_shared<MeshTexture>(
-        MeshTexture::CreateFromBytes(ImageLoader::png_file_to_bytes("Test_Texture.png"))
+        MeshTexture::CreateFromBytes(ImageLoader::png_file_to_bytes(texture_path))
     );
+    if(!texture){
+        std::cerr << "Failed to load texture" << std::endl;
+        throw std::runtime_error("Failed to load texture: " + texture_path);
+    }
+
     auto shader = std::make_shared<LitTextureShader>(texture, float3(0, 1, 0));
 
     ObjectMesh mesh(object_points, object_normals, texture_coords);

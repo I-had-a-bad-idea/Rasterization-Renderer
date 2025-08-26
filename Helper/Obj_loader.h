@@ -15,7 +15,7 @@
 class ObjLoader {
 public:
     static std::tuple<std::vector<float3>, std::vector<float3>, std::vector<float2>> load_obj_file(std::string obj_string);
-    static Object load_object(std::string path, float3 position, float3 rotatation, std::string name);
+    static Object load_object(std::string obj_path, std::string texture_path, float3 position, float3 rotatation, std::string name);
 };
 
 #endif
