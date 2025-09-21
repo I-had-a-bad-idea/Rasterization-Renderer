@@ -34,7 +34,7 @@ void ToFlatByteArray(RenderTarget &renderTarget, std::vector<Uint8> &data) {
     }
 }
 
-void Run(RenderTarget &target, Scene &scene, float fov) {
+void Run(RenderTarget &target, Scene &scene) {
     // Init SDL
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cerr << "SDL could not initialize: " << SDL_GetError() << std::endl;
@@ -143,13 +143,12 @@ void Run(RenderTarget &target, Scene &scene, float fov) {
 int main(int argc, char* argv[]) {
     int width = 960;
     int height = 540;
-    float fov = 90; // FOV in degrees
 
     TestScene scene;
     scene.Setup(); 
 
     RenderTarget render_target(width, height);
-    Run(render_target, scene, fov);
+    Run(render_target, scene);
     
     return 0;
 }

@@ -4,10 +4,10 @@
 void TestScene::Setup() {
     Object floor(ObjLoader::load_object("/Objects/Plane.obj", "/Textures/Grass.png", float3(0, -2, 1), float3(0, 0, 0), "floor"));
     Object monkey(ObjLoader::load_object("/Objects/Monkey.obj", "/Textures/Metal_golden.png", float3(0, 0, 3), float3(0, 3.141592, 0), "monkey"));
-    Object cube0(ObjLoader::load_object("/Objects/Sphere.obj", "/Textures/Metal_golden.png", float3(3, 2, 5), float3(0, 0, 0), "cube0"));
-    Object cube1(ObjLoader::load_object("/Objects/Sphere.obj", "/Textures/Gravel.png", float3(-3, 2, -5), float3(0, 0, 0), "cube1"));
+    Object cube(ObjLoader::load_object("/Objects/Cube.obj", "/Textures/Metal_golden.png", float3(3, 2, 5), float3(0, 0, 0), "cube"));
+    Object sphere(ObjLoader::load_object("/Objects/Sphere.obj", "/Textures/Gravel.png", float3(-3, 2, -5), float3(0, 0, 0), "sphere"));
     camera.Fov = 60;
-    objects = { floor, monkey, cube0, cube1 };
+    objects = { floor, monkey, cube, sphere };
 }
 
 void TestScene::Update(RenderTarget& target, float delta_time) {
@@ -45,7 +45,7 @@ void TestScene::Update(RenderTarget& target, float delta_time) {
     camera_transform.SetPosition(
         camera_transform.GetPosition() + move_delta * camera_speed * delta_time
     );
+    float3 new_rotation(objects[2].Obj_Transform.GetRotation() + float3(5, 0, 0) * delta_time);
+    objects[2].Obj_Transform.SetRotation(new_rotation);
 
-    // Optional: lock Y axis
-    // camera_transform.SetPosition(float3(camera_transform.GetPosition().x, 1, camera_transform.GetPosition().z));
 }
