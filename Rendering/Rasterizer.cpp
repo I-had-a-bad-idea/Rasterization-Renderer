@@ -56,10 +56,11 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
             tri.texture_coords[1] = model.Texture_cords[i + 1];
             tri.texture_coords[2] = model.Texture_cords[i + 2];
             
-           
-            tri.normals[0] = model.Normals[i + 0];
-            tri.normals[1] = model.Normals[i + 1];
-            tri.normals[2] = model.Normals[i + 2];
+            auto [ihat, jhat, khat] = object.Obj_Transform.GetBasisVectors();
+
+            tri.normals[0] = float3::Normalize(ObjectTransform::TransformVector(ihat, jhat, khat, model.Normals[i + 0]));
+            tri.normals[1] = float3::Normalize(ObjectTransform::TransformVector(ihat, jhat, khat, model.Normals[i + 1]));
+            tri.normals[2] = float3::Normalize(ObjectTransform::TransformVector(ihat, jhat, khat, model.Normals[i + 2]));
             
             tri.shader = object.Object_Shader;
             

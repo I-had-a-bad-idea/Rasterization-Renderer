@@ -30,6 +30,9 @@ public:
     std::tuple<float3, float3, float3> GetBasisVectors() const { return {ihat, jhat, khat}; }
     std::tuple<float3, float3, float3> GetInverseBasisVectors() const { return {ihat_inv, jhat_inv, khat_inv}; }
 
+    // Move each coordinate of given vector along the corresponding basis vector
+    static float3 TransformVector(float3 ihat, float3 jhat, float3 khat, float3 v);
+
 private:
 
     // Cached basis vectors
@@ -38,8 +41,6 @@ private:
 
     void UpdateBasisVectors();
 
-    // Move each coordinate of given vector along the corresponding basis vector
-    static float3 TransformVector(float3 ihat, float3 jhat, float3 khat, float3 v);
 };
 
 #endif
