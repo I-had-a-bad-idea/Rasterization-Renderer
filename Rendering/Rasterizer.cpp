@@ -29,6 +29,7 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
     
     std::vector<TriangleData> all_triangles;
     
+    // Process each object and collect triangles
     for (Object& object : scene.objects) {
         ObjectMesh& model = object.Mesh;
 
@@ -47,36 +48,37 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
             // Near-plane reject
             if (a3.z <= 0.1f || b3.z <= 0.1f || c3.z <= 0.1f) continue;
 
+            // Create triangle data
             TriangleData tri;
+            // Triangle vertices
             tri.screen_vertices[0] = a3;
             tri.screen_vertices[1] = b3;
             tri.screen_vertices[2] = c3;
-            
+            // Triangle texture coordinates
             tri.texture_coords[0] = model.Texture_cords[i + 0];
             tri.texture_coords[1] = model.Texture_cords[i + 1];
             tri.texture_coords[2] = model.Texture_cords[i + 2];
             
             auto [ihat, jhat, khat] = object.Obj_Transform.GetBasisVectors();
-
+            // Triangle normals
             tri.normals[0] = float3::Normalize(ObjectTransform::TransformVector(ihat, jhat, khat, model.Normals[i + 0]));
             tri.normals[1] = float3::Normalize(ObjectTransform::TransformVector(ihat, jhat, khat, model.Normals[i + 1]));
             tri.normals[2] = float3::Normalize(ObjectTransform::TransformVector(ihat, jhat, khat, model.Normals[i + 2]));
-            
+            // Triangle shader
             tri.shader = object.Object_Shader;
-            
+            // Add to global triangle list
             all_triangles.push_back(tri);
         }
     }
     
-    // Thread-safe triangle counter
     std::atomic<size_t> triangle_index(0);
     
-    // Lambda function for triangle rasterization worker
+    // Function for triangle rasterization worker
     auto rasterize_triangles = [&]() {
         size_t tri_idx;
         while ((tri_idx = triangle_index.fetch_add(1)) < all_triangles.size()) {
             const TriangleData& tri = all_triangles[tri_idx];
-            
+            // Extract vertices
             const float3& a3 = tri.screen_vertices[0];
             const float3& b3 = tri.screen_vertices[1];
             const float3& c3 = tri.screen_vertices[2];
@@ -108,13 +110,14 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
             const float invZb = 1.0f / b3.z;
             const float invZc = 1.0f / c3.z;
 
+            // Texture coordinate setup
             const float u0 = tri.texture_coords[0].x;
             const float v0 = tri.texture_coords[0].y;
             const float u1 = tri.texture_coords[1].x;
             const float v1 = tri.texture_coords[1].y;
             const float u2 = tri.texture_coords[2].x;
             const float v2 = tri.texture_coords[2].y;
-
+            
             const float u0z = u0 * invZa, v0z = v0 * invZa;
             const float u1z = u1 * invZb, v1z = v1 * invZb;
             const float u2z = u2 * invZc, v2z = v2 * invZc;
@@ -141,6 +144,7 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
             float w1_row = Math::edge_function(c2, a2, float2(startX, py));
             float w2_row = Math::edge_function(a2, b2, float2(startX, py));
 
+            // Rasterize the triangle row by row
             for (int y = minY; y <= maxY; ++y) {
                 float w0 = w0_row;
                 float w1 = w1_row;
@@ -156,10 +160,11 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
                         float alpha = w0 * invArea;
                         float beta  = w1 * invArea;
                         float gamma = w2 * invArea;
-
+                        // Calculate depth
                         const float depth = a3.z * alpha + b3.z * beta + c3.z * gamma;
                         const int idx = rowOffset + x;
 
+                        // Only write if closer than existing depth
                         if (depth < target.depth_buffer[idx]) {
                             const float iz = invZa * alpha + invZb * beta + invZc * gamma;
                             const float u = (u0z * alpha + u1z * beta + u2z * gamma) / iz;
@@ -167,15 +172,17 @@ void Rasterizer::Render(Scene& scene, RenderTarget& target) {
                             
                             // Color write
                             switch (tri.shader->type) {
+                                // For texture shader, sample the texture
                                 case ShaderType::Texture: {
                                     auto* shader = static_cast<TextureShader*>(tri.shader.get());
                                     target.color_buffer[idx] = shader->Shader_texture->Sample(u, v);
                                     break;
                                 }
+                                // For lit texture shader, calculate lighting and modulate the texture color
                                 case ShaderType::LitTexture: {
                                     auto* shader = static_cast<LitTextureShader*>(tri.shader.get());
                                     float3 normal(n0 * alpha + n1 * beta + n2 * gamma);
-                                    float light_intensity = (Math::dot(normal, shader->Direction_to_light) + 1) * 0.5f;
+                                    float light_intensity = (Math::dot(normal, shader->Direction_to_light) + 1) * 0.35f;
                                     light_intensity = Math::lerp(0.2f, 1.0f, light_intensity);
                                     target.color_buffer[idx] = shader->Shader_texture->Sample(u, v) * light_intensity;
                                     break;
