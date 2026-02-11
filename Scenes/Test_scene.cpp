@@ -1,6 +1,7 @@
 #include "Test_scene.h"
 #include <SDL2/SDL.h>
 
+// Set up scene with objects and camera
 void TestScene::Setup() {
     Object floor(ObjLoader::load_object("/Objects/Plane.obj", "/Textures/Grass.png", float3(0, -2, 1), float3(0, 0, 0), "floor"));
     Object monkey(ObjLoader::load_object("/Objects/Monkey.obj", "/Textures/Metal_golden.png", float3(0, 0, 3), float3(0, 3.141592, 0), "monkey"));
@@ -10,11 +11,12 @@ void TestScene::Setup() {
     objects = { floor, monkey, cube, sphere };
 }
 
+// Simple scene update: handle input and animate objects
 void TestScene::Update(RenderTarget& target, float delta_time) {
     const float mouse_sensitivity = 2.0f;
     ObjectTransform& camera_transform(camera.CamTransform);
 
-    // --- Mouse handling (always relative) ---
+    // Mouse handling (always relative)
     int dx, dy;
     SDL_GetRelativeMouseState(&dx, &dy);
 
@@ -30,7 +32,7 @@ void TestScene::Update(RenderTarget& target, float delta_time) {
     rot.y -= mouse_delta.x;
     camera_transform.SetRotation(rot);
 
-    // --- Keyboard handling ---
+    // Keyboard handling
     const float camera_speed = 5.0f;
     const Uint8* keyState = SDL_GetKeyboardState(nullptr);
 
@@ -42,6 +44,7 @@ void TestScene::Update(RenderTarget& target, float delta_time) {
     if (keyState[SDL_SCANCODE_A]) move_delta -= cam_right;
     if (keyState[SDL_SCANCODE_D]) move_delta += cam_right;
 
+    // Move camera based on input
     camera_transform.SetPosition(
         camera_transform.GetPosition() + move_delta * camera_speed * delta_time
     );

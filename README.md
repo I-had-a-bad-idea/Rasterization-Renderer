@@ -1,17 +1,22 @@
-![MIT License](https://img.shields.io/badge/license-MIT-green)
-![C++](https://img.shields.io/badge/c++-17+-blue)
-![SDL2](https://img.shields.io/badge/SDL2-red)
-![Commit Activity](https://img.shields.io/github/commit-activity/m/I-had-a-bad-idea/Rasterization-Renderer)
-![Last Commit](https://img.shields.io/github/last-commit/I-had-a-bad-idea/Rasterization-Renderer)
-![Open Issues](https://img.shields.io/github/issues/I-had-a-bad-idea/Rasterization-Renderer)
-![Closed Issues](https://img.shields.io/github/issues-closed/I-had-a-bad-idea/Rasterization-Renderer)
-![Repo Size](https://img.shields.io/github/repo-size/I-had-a-bad-idea/Rasterization-Renderer)
-![Contributors](https://img.shields.io/github/contributors/I-had-a-bad-idea/Rasterization-Renderer)
-
-
 # Rasterization-Renderer
 
 A basic software rasterization-based 3D renderer built with C++ and SDL.
+
+## Overview
+- [Rasterization-Renderer](#rasterization-renderer)
+  - [Overview](#overview)
+  - [Features](#features)
+  - [Requirements](#requirements)
+  - [Installation](#installation)
+    - [Windows (MSYS2)](#windows-msys2)
+  - [Usage](#usage)
+    - [Controls](#controls)
+    - [Creating a New Scene](#creating-a-new-scene)
+  - [Project Structure](#project-structure)
+    - [Core Components](#core-components)
+  - [Performance](#performance)
+  - [License](#license)
+
 
 ## Features
 
@@ -52,13 +57,81 @@ g++ -O3 -I. -I./Helper -I./Math -I./Object -I./Rendering -I./Scenes ./*.cpp ./He
 
 Run the compiled executable:
 ```bash
-main_release.exe
+Rasterization_renderer.exe
 ```
 
 ### Controls
 - **W, A, S, D:** Move the camera forward, left, backward, and right
 - **Mouse:** Look around 
 - **ESC:** Exit the application
+
+### Creating a New Scene
+
+To add your own scene to the renderer, follow these steps:
+
+1. **Create a Scene Class**
+   
+   - In the `Scenes/` directory, create a new header and source file for your scene (e.g., `MyScene.h` and `MyScene.cpp`).
+   - Inherit from the `Scene` base class and implement the `Setup()` and `Update(RenderTarget& target, float delta_time)` methods.
+
+   Example (`Scenes/MyScene.h`):
+   ```cpp
+   #ifndef MY_SCENE_H
+   #define MY_SCENE_H
+
+   #include "Scene.h"
+
+   class MyScene : public Scene {
+   public:
+       void Setup() override;
+       void Update(RenderTarget& target, float delta_time) override;
+   };
+
+   #endif
+   ```
+
+   Example (`Scenes/MyScene.cpp`):
+   ```cpp
+   #include "MyScene.h"
+   #include "Object/Obj_loader.h"
+   #include "Object/Object.h"
+
+   void MyScene::Setup() {
+       // Add objects to the scene
+       Object myObject(ObjLoader::load_object("/Objects/Cube.obj", "/Textures/Metal_golden.png", float3(0,0,0), float3(0,0,0), "cube"));
+       objects.push_back(myObject);
+       camera.Fov = 60;
+   }
+
+   void MyScene::Update(RenderTarget& target, float delta_time) {
+       // Handle input or animate objects here
+   }
+   ```
+
+2. **Register and Use Your Scene**
+   
+   - In `main.cpp`, include your new scene header and instantiate your scene instead of the default one.
+   - Replace the usage of `TestScene` with your new scene class.
+
+   Example:
+   ```cpp
+   #include "Scenes/MyScene.h"
+   // ...
+   int main(int argc, char* argv[]) {
+       RenderTarget target(1280, 720);
+       MyScene scene;
+       scene.Setup();
+       Run(target, scene);
+       return 0;
+   }
+   ```
+
+3. **Compile and Run**
+   
+   - Rebuild the project and run the executable to see your custom scene.
+
+**Tip:**  
+Look at `Scenes/Test_scene.cpp` and `Scenes/Test_scene.h` for a complete example of a scene implementation.
 
 ## Project Structure
 
@@ -84,7 +157,6 @@ Rasterization-Renderer/
 - [**Scene:**](Scenes/Scene.h) Camera and object management ([Example Scene](Scenes/Test_scene.cpp))
 
 ## Performance
--
 - Thread pool for triangle rasterization
 - Optimized vertex transformation
 - Efficient back-face culling
