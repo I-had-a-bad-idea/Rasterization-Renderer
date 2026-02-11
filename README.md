@@ -18,6 +18,8 @@ A basic software rasterization-based 3D renderer built with C++ and SDL.
   - [License](#license)
 
 
+<img src=".github/assets/image.png" alt="Image" width="700" height="400">
+
 ## Features
 
 - **Rasterization Rendering:** Fast CPU-based 3D rendering using rasterization
