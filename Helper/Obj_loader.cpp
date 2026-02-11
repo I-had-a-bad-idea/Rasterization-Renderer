@@ -3,10 +3,13 @@
 #include <iostream>
 #include <array>
 
+// Load OBJ file and create Object
 Object ObjLoader::load_object(std::string obj_path, std::string texture_path, float3 position, float3 rotation, std::string name){
+    // Resolve full paths
     obj_path = std::filesystem::current_path().string() + obj_path;
     texture_path = std::filesystem::current_path().string() + texture_path;
     std::string obj_string = StringHelper::readFileToString(obj_path);
+    // Load and parse OBJ
     auto mesh_data = load_obj_file(obj_string);
 
     std::vector<float3> object_points = std::get<0>(mesh_data);
@@ -32,18 +35,18 @@ Object ObjLoader::load_object(std::string obj_path, std::string texture_path, fl
         std::cerr << "Failed to load texture" << std::endl;
         throw std::runtime_error("Failed to load texture: " + texture_path);
     }
-
+    // Create shader
     auto shader = std::make_shared<LitTextureShader>(texture, float3(0, 1, 0));
-
+    
+    // Create mesh and object
     ObjectMesh mesh(object_points, object_normals, texture_coords);
     return Object(mesh, shader, name, triangle_colors, position, rotation);
 }
 
 
-// Proper OBJ parser
+// OBJ parser
 std::tuple<std::vector<float3>, std::vector<float3>, std::vector<float2>> 
 ObjLoader::load_obj_file(std::string objString) {
-
     std::vector<float3> positions;
     std::vector<float3> normals_all;
     std::vector<float2> texcoords_all;
@@ -52,15 +55,17 @@ ObjLoader::load_obj_file(std::string objString) {
     std::vector<float3> out_normals;
     std::vector<float2> out_texcoords;
 
+    // Parse OBJ line by line
     std::istringstream stream(objString);
     std::string line;
-
+    
     while (std::getline(stream, line)) {
         if (line.rfind("v ", 0) == 0) { // vertex position
             auto parts = StringHelper::split(line.substr(2), ' ');
             if (parts.size() < 3) continue;
             positions.emplace_back(std::stof(parts[0]), std::stof(parts[1]), std::stof(parts[2]));
         }
+        // Texture coordinate
         else if (line.rfind("vt", 0) == 0) {
             auto parts = StringHelper::split(line.substr(3), ' ');
             if (parts.size() < 2) continue;
@@ -68,11 +73,13 @@ ObjLoader::load_obj_file(std::string objString) {
             float v = std::stof(parts[1]);
             texcoords_all.emplace_back(u, 1.0f - v); // flip V
         }
+        // Normal vector
         else if (line.rfind("vn", 0) == 0) {
             auto parts = StringHelper::split(line.substr(3), ' ');
             if (parts.size() < 3) continue;
             normals_all.emplace_back(std::stof(parts[0]), std::stof(parts[1]), std::stof(parts[2]));
         }
+        // Face definition
         else if (line.rfind("f ", 0) == 0) {
             auto faceIndexGroups = StringHelper::split(line.substr(2), ' ');
 
@@ -80,11 +87,13 @@ ObjLoader::load_obj_file(std::string objString) {
             for (int i = 1; i + 1 < (int)faceIndexGroups.size(); i++) {
                 std::array<std::string,3> tri = { faceIndexGroups[0], faceIndexGroups[i], faceIndexGroups[i+1] };
                 for (auto& vertStr : tri) {
+                    // Parse vertex/texcoord/normal indices
                     auto idx = StringHelper::split(vertStr, '/');
                     int vi = (idx.size() > 0 && !idx[0].empty()) ? std::stoi(idx[0]) - 1 : -1;
                     int ti = (idx.size() > 1 && !idx[1].empty()) ? std::stoi(idx[1]) - 1 : -1;
                     int ni = (idx.size() > 2 && !idx[2].empty()) ? std::stoi(idx[2]) - 1 : -1;
-
+                    
+                    // Add vertex data to output arrays
                     if (vi >= 0) out_vertices.push_back(positions[vi]);
                     if (ti >= 0) out_texcoords.push_back(texcoords_all[ti]);
                     else out_texcoords.emplace_back(0,0);
@@ -94,6 +103,6 @@ ObjLoader::load_obj_file(std::string objString) {
             }
         }
     }
-
+    // Return parsed data
     return std::make_tuple(out_vertices, out_normals, out_texcoords);
 }

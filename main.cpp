@@ -22,11 +22,12 @@ void ToFlatByteArray(RenderTarget &renderTarget, std::vector<Uint8> &data) {
 
     for (size_t i = 0; i < renderTarget.color_buffer.size(); i++) {
         float3 &col = renderTarget.color_buffer[i];
+        // Clamp color values to [0, 1] and convert to [0, 255]
         Uint8 r = static_cast<Uint8>(std::clamp(col.r(), 0.0f, 1.0f) * 255.0f);
         Uint8 g = static_cast<Uint8>(std::clamp(col.g(), 0.0f, 1.0f) * 255.0f);
         Uint8 b = static_cast<Uint8>(std::clamp(col.b(), 0.0f, 1.0f) * 255.0f);
         Uint8 a = 255;
-
+        // Store in RGBA order
         data[i * 4 + 0] = r;
         data[i * 4 + 1] = g;
         data[i * 4 + 2] = b;
@@ -34,8 +35,9 @@ void ToFlatByteArray(RenderTarget &renderTarget, std::vector<Uint8> &data) {
     }
 }
 
+// Main renderer loop
 void Run(RenderTarget &target, Scene &scene) {
-    // Init SDL
+    // Initiate SDL
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cerr << "SDL could not initialize: " << SDL_GetError() << std::endl;
         return;
@@ -85,7 +87,7 @@ void Run(RenderTarget &target, Scene &scene) {
     bool running = true;
     Uint32 lastTime = SDL_GetTicks();
     int frameCount = 0;
-
+    // Main loop
     while (running) {
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
@@ -101,6 +103,7 @@ void Run(RenderTarget &target, Scene &scene) {
         lastTime = now;
 
         scene.Update(target, deltaTime);
+        // Render scene
         Rasterizer::Render(scene, target);
 
         // FPS counter
@@ -133,21 +136,23 @@ void Run(RenderTarget &target, Scene &scene) {
 
         SDL_GL_SwapWindow(window);
     }
-
+    // Cleanup
     glDeleteTextures(1, &texID);
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
-
+// Entry point
 int main(int argc, char* argv[]) {
+    // Define render target size
     int width = 960;
     int height = 540;
-
+    // Create scene
     TestScene scene;
     scene.Setup(); 
-
+    // Create render target
     RenderTarget render_target(width, height);
+    // Start renderer loop
     Run(render_target, scene);
     
     return 0;

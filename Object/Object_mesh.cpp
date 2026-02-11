@@ -62,13 +62,6 @@ void ObjectMesh::process_model(ObjectTransform Obj_Transform, float2 target_size
     }
 }
 
-// TODO this code make funny colors, find out why
-//     for(int i = 0; i < Normals.size(); i++){
-//         Normals[i] = float3::Normalize(Obj_Transform.ToWorldPoint(Normals[i]) - Obj_Transform.GetPosition());
-//         Normals[i] = float3::Normalize(Obj_Transform.GetRotation() * Normals[i]);
-//     }
-// }
-
 ObjectMesh::ObjectMesh(std::vector<float3> vertices, std::vector<float3> normals, std::vector<float2> texture_cords){
     Vertices = vertices;
     Normals = normals;

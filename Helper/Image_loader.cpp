@@ -1,5 +1,6 @@
 #include "Image_loader.h"
 
+// Load PNG file and convert to byte array (BGR format with width/height header)
 std::vector<unsigned char> ImageLoader::png_file_to_bytes(const std::string& filePath) {
     // Load PNG using SDL_image
     SDL_Surface* surface = IMG_Load(filePath.c_str());
@@ -10,7 +11,7 @@ std::vector<unsigned char> ImageLoader::png_file_to_bytes(const std::string& fil
     int width = surface->w;
     int height = surface->h;
 
-    // Convert surface to 24-bit RGB if needed
+    // Convert surface to 24-bit RGB
     SDL_Surface* rgbSurface = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGB24, 0);
     SDL_FreeSurface(surface);
     
@@ -18,7 +19,6 @@ std::vector<unsigned char> ImageLoader::png_file_to_bytes(const std::string& fil
         throw std::runtime_error("Failed to convert image format: " + std::string(SDL_GetError()));
     }
 
-    // Build buffer: [w0][w1][h0][h1] + BGR pixels
     std::vector<unsigned char> buffer;
     buffer.resize(4 + width * height * 3);
 
@@ -45,7 +45,7 @@ std::vector<unsigned char> ImageLoader::png_file_to_bytes(const std::string& fil
             index += 3;
         }
     }
-
+    // Clean up
     SDL_FreeSurface(rgbSurface);
 
     return buffer;

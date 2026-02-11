@@ -34,7 +34,7 @@ float3 ObjectTransform::ToLocalPoint(float3 world_point) const {
     float3 relative = world_point - Position;
     return TransformVector(ihat_inv, jhat_inv, khat_inv, relative);
 }
-
+// Update basis vectors based on current rotation
 void ObjectTransform::UpdateBasisVectors()
 {
     float3 ihat_yaw(std::cos(Rotation.y), 0, std::sin(Rotation.y));
@@ -49,7 +49,7 @@ void ObjectTransform::UpdateBasisVectors()
     float3 jhat_roll(-std::sin(Rotation.z), std::cos(Rotation.z), 0);
     float3 khat_roll(0, 0, 1);
 
-    // ---- Yaw and Pitch combined ----
+    // Yaw and Pitch combined
     float3 ihat_pitchYaw = TransformVector(ihat_yaw, jhat_yaw, khat_yaw, ihat_pitch);
     float3 jhat_pitchYaw = TransformVector(ihat_yaw, jhat_yaw, khat_yaw, jhat_pitch);
     float3 khat_pitchYaw = TransformVector(ihat_yaw, jhat_yaw, khat_yaw, khat_pitch);
