@@ -12,6 +12,7 @@ A basic software rasterization-based 3D renderer built with C++ and SDL.
   - [Usage](#usage)
     - [Controls](#controls)
     - [Creating a New Scene](#creating-a-new-scene)
+  - [Using as a library](#using-as-a-library)
   - [Project Structure](#project-structure)
     - [Core Components](#core-components)
   - [Performance](#performance)
@@ -22,6 +23,7 @@ A basic software rasterization-based 3D renderer built with C++ and SDL.
 
 ## Features
 
+- **Build to be used as a library**: Easialy use this renderer as a library
 - **Rasterization Rendering:** Fast CPU-based 3D rendering using rasterization
 - **Multi-threaded Rendering:** Optimized performance using thread pools
 - **Scene Management:** Support for loading 3D objects (in .obj format)
@@ -134,6 +136,36 @@ To add your own scene to the renderer, follow these steps:
 
 **Tip:**  
 Look at `Scenes/Test_scene.cpp` and `Scenes/Test_scene.h` for a complete example of a scene implementation.
+
+## Using as a library
+
+Simply add it as a submodule:
+```bash
+git submodule add https://github.com/I-had-a-bad-idea/Rasterization-Renderer.git external/Raterization-Renderer
+```
+then create a [custom scene](#creating-a-new-scene)
+then import `main.h` and your scene. Then use the whole thing:
+```cpp
+#include <Rasterization-Renderer/main.h>
+#include "World-Scene/world.h"
+
+int main(void)
+{
+    // Define render target size
+    int width = 960;
+    int height = 540;
+    // Create scene
+    World world;
+    world.Setup(); 
+    // Create render target
+    RenderTarget render_target(width, height);
+    // Start renderer loop
+    Run(render_target, scene);
+    return 0;
+}
+```
+Run this in a background thread to not block your main programm code.
+you can still modify your Scene, as Run only takes a reference.
 
 ## Project Structure
 
