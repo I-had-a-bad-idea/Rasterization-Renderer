@@ -23,7 +23,7 @@ A basic software rasterization-based 3D renderer built with C++ and SDL.
 
 ## Features
 
-- **Build to be used as a library**: Easialy use this renderer as a library
+- **Build to be used as a library**: [Easily use this renderer as a library](#using-as-a-library)
 - **Rasterization Rendering:** Fast CPU-based 3D rendering using rasterization
 - **Multi-threaded Rendering:** Optimized performance using thread pools
 - **Scene Management:** Support for loading 3D objects (in .obj format)
@@ -160,7 +160,7 @@ int main(void)
     // Create render target
     RenderTarget render_target(width, height);
     // Start renderer loop
-    Run(render_target, scene);
+    Run(render_target, world);
     return 0;
 }
 ```
