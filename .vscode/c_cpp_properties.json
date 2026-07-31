@@ -5,11 +5,11 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "C:/msys64/mingw64/include/",
-                "${workspaceFolder}/Helper",
-                "${workspaceFolder}/Math",
-                "${workspaceFolder}/Object",
-                "${workspaceFolder}/Rendering",
-                "${workspaceFolder}/Scenes"
+                "${workspaceFolder}/src/Helper",
+                "${workspaceFolder}/src/Math",
+                "${workspaceFolder}/src/Object",
+                "${workspaceFolder}/src/Rendering",
+                "${workspaceFolder}/src/Scenes"
             ],
             "defines": [
                 "_DEBUG",

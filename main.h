@@ -3,14 +3,12 @@
 #include <vector>
 #include <algorithm>
 #include <filesystem>
-#include "Object/Object.h"
-#include "Math/Vector.h"
-#include "Helper/StringHelper.h"
-#include "Math/Maths.h"
-#include "Rendering/RenderTarget.h"
-#include "Rendering/Rasterizer.h"
-#include "Obj_loader.h"
-#include "Test_scene.h"
+#include "src/Object/Object.h"
+#include "src/Math/Vector.h"
+#include "src/Helper/StringHelper.h"
+#include "src/Math/Maths.h"
+#include "src/Rendering/RenderTarget.h"
+#include "src/Rendering/Rasterizer.h"
 
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
