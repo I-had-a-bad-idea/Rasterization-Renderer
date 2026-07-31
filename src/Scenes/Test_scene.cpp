@@ -3,10 +3,10 @@
 
 // Set up scene with objects and camera
 void TestScene::Setup() {
-    Object floor(ObjLoader::load_object("/Objects/Plane.obj", "/Textures/Grass.png", float3(0, -2, 1), float3(0, 0, 0), "floor"));
-    Object monkey(ObjLoader::load_object("/Objects/Monkey.obj", "/Textures/Metal_golden.png", float3(0, 0, 3), float3(0, 3.141592, 0), "monkey"));
-    Object cube(ObjLoader::load_object("/Objects/Cube.obj", "/Textures/Metal_golden.png", float3(3, 2, 5), float3(0, 0, 0), "cube"));
-    Object sphere(ObjLoader::load_object("/Objects/Sphere.obj", "/Textures/Gravel.png", float3(-3, 2, -5), float3(0, 0, 0), "sphere"));
+    Object floor(ObjLoader::load_object("/assets/Objects/Plane.obj", "/assets/Textures/Grass.png", float3(0, -2, 1), float3(0, 0, 0), "floor"));
+    Object monkey(ObjLoader::load_object("/assets//Objects/Monkey.obj", "/assets/Textures/Metal_golden.png", float3(0, 0, 3), float3(0, 3.141592, 0), "monkey"));
+    Object cube(ObjLoader::load_object("/assets//Objects/Cube.obj", "/assets/Textures/Metal_golden.png", float3(3, 2, 5), float3(0, 0, 0), "cube"));
+    Object sphere(ObjLoader::load_object("/assets//Objects/Sphere.obj", "/assets/Textures/Gravel.png", float3(-3, 2, -5), float3(0, 0, 0), "sphere"));
     camera.Fov = 60;
     objects = { floor, monkey, cube, sphere };
 }
