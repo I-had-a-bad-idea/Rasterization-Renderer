@@ -20,11 +20,15 @@ void ToFlatByteArray(RenderTarget &renderTarget, std::vector<Uint8> &data) {
 }
 
 // Main renderer loop
-void Run(RenderTarget &target, Scene &scene) {
+void Run(std::string name, RenderTarget &target, Scene &scene) {
     // Initiate SDL
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cerr << "SDL could not initialize: " << SDL_GetError() << std::endl;
         return;
+    }
+    if (name.length() == 0) {
+        std::cout << "Changing window name to default" << std::endl; 
+        name = "Rasterization-Renderer";
     }
 
     // Request an OpenGL 2.1 context
@@ -33,7 +37,7 @@ void Run(RenderTarget &target, Scene &scene) {
 
     // Create window
     SDL_Window* window = SDL_CreateWindow(
-        "Rasterization-Renderer",
+        name.c_str(),
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
         target.Width,

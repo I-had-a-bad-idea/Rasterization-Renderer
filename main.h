@@ -18,4 +18,4 @@
 void ToFlatByteArray(RenderTarget &renderTarget, std::vector<Uint8> &data);
 
 // Main renderer loop
-void Run(RenderTarget &target, Scene &scene);
+void Run(std::string name, RenderTarget &target, Scene &scene);

@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
     // Create render target
     RenderTarget render_target(width, height);
     // Start renderer loop
-    Run(render_target, scene);
+    Run("Rasterization-Renderer", render_target, scene);
     
     return 0;
 }
